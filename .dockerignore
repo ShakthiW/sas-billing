@@ -1,0 +1,43 @@
+# dependencies
+node_modules
+pnpm-store
+.pnp
+.pnp.cjs
+
+# build output
+.next
+out
+dist
+coverage
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# vcs
+.git
+.git/**
+
+# editor
+.vscode
+.idea
+
+# docker files (not needed in the image)
+Dockerfile
+docker-compose*
+.dockerignore
+
+# env files (pass at runtime)
+.env
+.env.*
+!.env.example
+
+# misc
+*.local
+**/*.swp
+**/*.swo
+
+

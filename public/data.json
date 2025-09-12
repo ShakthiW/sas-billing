@@ -1,0 +1,45 @@
+{
+  "todo": [
+    {
+      "id": "1",
+      "title": "Task 1",
+      "imageUrl": "",
+      "subTasksCompleted": 1,
+      "totalSubTasks": 3
+    },
+    {
+      "id": "2",
+      "title": "Task 2",
+      "imageUrl": "",
+      "subTasksCompleted": 0,
+      "totalSubTasks": 2
+    }
+  ],
+  "inProgress": [
+    {
+      "id": "3",
+      "title": "Task 3",
+      "imageUrl": "",
+      "subTasksCompleted": 2,
+      "totalSubTasks": 5
+    }
+  ],
+  "finished": [
+    {
+      "id": "4",
+      "title": "Task 4",
+      "imageUrl": "",
+      "subTasksCompleted": 3,
+      "totalSubTasks": 3
+    }
+  ],
+  "delivered": [
+    {
+      "id": "5",
+      "title": "Task 5",
+      "imageUrl": "",
+      "subTasksCompleted": 4,
+      "totalSubTasks": 4
+    }
+  ]
+}
