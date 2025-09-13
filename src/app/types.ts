@@ -60,6 +60,9 @@ export interface SubTask {
   approvalStatus?: "pending" | "approved" | "rejected";
   approvedBy?: string; // User ID who approved
   approvedAt?: Date;
+  // Optional description fields for printable contexts
+  serviceDescription?: string;
+  partsDescription?: string;
 }
 
 export interface Bill {
@@ -79,7 +82,7 @@ export interface Bill {
   commission?: number; // Made optional as it's being phased out
   finalAmount: number;
   bankAccount: string;
-  bankEntityLabel?: "SAS Air Conditioning" | "SAS Enterprise";
+  bankEntityLabel?: "SAS Air Conditioning" | "SAS Enterprises";
   paymentType: "Cash" | "Credit" | "Cheque" | "Unspecified";
   status: "draft" | "finalized" | "paid" | "partially_paid"; // Bill status
   initialPayment?: number;
@@ -153,4 +156,21 @@ export interface CreditPayment {
   receiptNumber?: string; // Receipt/reference number
   processedBy?: string; // User who processed the payment
   validationStatus?: "pending" | "verified" | "disputed"; // Payment validation status
+}
+
+// Quotation type
+export interface Quotation {
+  _id?: string;
+  vehicleNo: string;
+  customerName?: string;
+  customerPhone?: string;
+  isCompanyVehicle?: boolean;
+  companyName?: string;
+  subTasks?: SubTask[];
+  notes?: string;
+  quotedAmount: number;
+  additionalCharges?: number;
+  totalAmount: number;
+  createdAt?: Date;
+  updatedAt?: Date;
 }

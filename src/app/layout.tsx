@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "SAS Enterprise",
-  description: "SAS Enterprise Billing System by Standord",
+  title: "SAS Enterprises",
+  description: "SAS Enterprises Billing System by Standord",
 };
 
 // Disable prerendering across the app to avoid build-time provider errors

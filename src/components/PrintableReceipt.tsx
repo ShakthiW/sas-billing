@@ -28,7 +28,7 @@ const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
   }, [billData]);
 
   const receiptTitle = (() => {
-    if (billData.paymentType === "Unspecified") return "SAS Enterprise";
+    if (billData.paymentType === "Unspecified") return "SAS Enterprises";
     if (billData.paymentType === "Cash") return "SAS Air Conditioning";
     if (
       billData.paymentType === "Credit" ||
@@ -36,9 +36,9 @@ const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
     ) {
       if (!billData.bankAccount) return "SAS Air Conditioning";
       if (billData.bankEntityLabel) return billData.bankEntityLabel;
-      return "SAS Enterprise";
+      return "SAS Enterprises";
     }
-    return "SAS Enterprise";
+    return "SAS Enterprises";
   })();
 
   if (error) {

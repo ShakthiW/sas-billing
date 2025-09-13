@@ -467,8 +467,8 @@ const Dashboard = () => {
                                               </SelectItem>
                                             ))
                                           ) : (
-                                            <SelectItem value="SAS Enterprise">
-                                              SAS Enterprise
+                                            <SelectItem value="SAS Enterprises">
+                                              SAS Enterprises
                                             </SelectItem>
                                           )}
                                         </SelectContent>

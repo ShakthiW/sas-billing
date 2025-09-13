@@ -2411,7 +2411,7 @@ export async function updateBankAccount(
     accountNumber?: string;
     bankName?: string;
     accountType?: "Current" | "Savings" | "Business" | "Tax";
-    entityLabel?: "SAS Air Conditioning" | "SAS Enterprise";
+    entityLabel?: "SAS Air Conditioning" | "SAS Enterprises";
     currentBalance?: number;
     totalBalance?: number;
     description?: string;

@@ -21,7 +21,7 @@ const ReceiptGenerator: React.FC<ReceiptGeneratorProps> = ({
   const maxAttempts = 3;
 
   const receiptTitle = (() => {
-    if (billData.paymentType === "Unspecified") return "SAS Enterprise";
+    if (billData.paymentType === "Unspecified") return "SAS Enterprises";
     if (billData.paymentType === "Cash") return "SAS Air Conditioning";
     if (
       billData.paymentType === "Credit" ||
@@ -29,9 +29,9 @@ const ReceiptGenerator: React.FC<ReceiptGeneratorProps> = ({
     ) {
       if (!billData.bankAccount) return "SAS Air Conditioning";
       if (billData.bankEntityLabel) return billData.bankEntityLabel;
-      return "SAS Enterprise";
+      return "SAS Enterprises";
     }
-    return "SAS Enterprise";
+    return "SAS Enterprises";
   })();
 
   const createFallbackPdf = useCallback(() => {

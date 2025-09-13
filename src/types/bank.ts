@@ -5,7 +5,7 @@ export interface BankAccount {
   accountNumber: string;
   bankName: string;
   accountType: "Current" | "Savings" | "Business" | "Tax";
-  entityLabel?: "SAS Air Conditioning" | "SAS Enterprise";
+  entityLabel?: "SAS Air Conditioning" | "SAS Enterprises";
   currentBalance: number;
   totalBalance: number; // Credit limit or total available funds
   isActive: boolean;

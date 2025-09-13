@@ -90,6 +90,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             url: "/dashboard/delivered-jobs",
             icon: Truck,
           },
+          {
+            title: "Quotations",
+            url: "/dashboard/quotations",
+            icon: FileText,
+          },
         ],
       },
       {

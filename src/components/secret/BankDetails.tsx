@@ -68,7 +68,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isOpen, handleClose }) => {
     accountType: "Current" as "Current" | "Savings" | "Business" | "Tax",
     entityLabel: "SAS Air Conditioning" as
       | "SAS Air Conditioning"
-      | "SAS Enterprise",
+      | "SAS Enterprises",
     currentBalance: 0,
     totalBalance: 0,
     description: "",
@@ -85,7 +85,7 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isOpen, handleClose }) => {
     accountType: "Current" as "Current" | "Savings" | "Business" | "Tax",
     entityLabel: "SAS Air Conditioning" as
       | "SAS Air Conditioning"
-      | "SAS Enterprise",
+      | "SAS Enterprises",
     currentBalance: 0,
     totalBalance: 0,
     description: "",
@@ -504,7 +504,9 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isOpen, handleClose }) => {
                   <SelectItem value="SAS Air Conditioning">
                     SAS Air Conditioning
                   </SelectItem>
-                  <SelectItem value="SAS Enterprise">SAS Enterprise</SelectItem>
+                  <SelectItem value="SAS Enterprises">
+                    SAS Enterprises
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -714,7 +716,9 @@ const BankDetails: React.FC<BankDetailsProps> = ({ isOpen, handleClose }) => {
                   <SelectItem value="SAS Air Conditioning">
                     SAS Air Conditioning
                   </SelectItem>
-                  <SelectItem value="SAS Enterprise">SAS Enterprise</SelectItem>
+                  <SelectItem value="SAS Enterprises">
+                    SAS Enterprises
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
