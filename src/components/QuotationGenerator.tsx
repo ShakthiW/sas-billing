@@ -16,12 +16,18 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
   const ref = useRef<HTMLDivElement>(null);
   const [isGenerating, setIsGenerating] = useState(false);
   const hasGeneratedRef = useRef(false);
+  const lastSignatureRef = useRef<string>("");
 
   const generate = useCallback(async () => {
-    if (!ref.current || isGenerating || hasGeneratedRef.current) return;
+    if (!ref.current || isGenerating) return;
     try {
       setIsGenerating(true);
       await new Promise((r) => setTimeout(r, 300));
+      // If content hasn't changed and we already generated, skip
+      const signature = ref.current?.innerHTML?.length?.toString() || "";
+      if (signature === lastSignatureRef.current && hasGeneratedRef.current) {
+        return;
+      }
       const canvas = await html2canvas(ref.current, {
         scale: 2,
         backgroundColor: "#ffffff",
@@ -44,6 +50,7 @@ const QuotationGenerator: React.FC<QuotationGeneratorProps> = ({
       pdf.addImage(img, "PNG", x, y, cW * ratio, cH * ratio);
       onGenerated(pdf.output("blob"));
       hasGeneratedRef.current = true;
+      lastSignatureRef.current = signature;
     } finally {
       setIsGenerating(false);
     }
