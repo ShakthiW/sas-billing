@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -35,9 +35,13 @@ import {
   CreditCard,
   Calendar,
   Search,
+  FileDown,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import PrintableCreditBill from "@/components/PrintableCreditBill";
+import PrintableReceipt from "@/components/PrintableReceipt";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 export default function PaymentsPage() {
   const [creditBills, setCreditBills] = useState<Bill[]>([]);
@@ -46,6 +50,8 @@ export default function PaymentsPage() {
   const [vehicleSearch, setVehicleSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [dateFilter, setDateFilter] = useState<string>("all");
+  const [billForPdf, setBillForPdf] = useState<Bill | null>(null);
+  const hiddenRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     fetchCreditBills();
@@ -164,6 +170,57 @@ export default function PaymentsPage() {
     if (diffDays <= 7)
       return { label: "Due Soon", color: "bg-orange-100 text-orange-800" };
     return { label: "On Time", color: "bg-green-100 text-green-800" };
+  };
+
+  const downloadReceiptPdf = async (bill: Bill) => {
+    try {
+      setBillForPdf(bill);
+      // Wait for hidden content to mount and layout
+      await new Promise((r) => setTimeout(r, 350));
+      const container = hiddenRef.current;
+      if (!container) return;
+
+      // Capture each explicit A5 page separately to honor manual page breaks
+      const pageNodes = Array.from(
+        container.querySelectorAll(".a5-page")
+      ) as HTMLElement[];
+      if (pageNodes.length === 0) return;
+
+      const pdf = new jsPDF({
+        unit: "mm",
+        format: "a5",
+        orientation: "portrait",
+      });
+      const pageWidthMM = pdf.internal.pageSize.getWidth();
+      const marginMM = 4; // small outer margin in PDF
+
+      for (let i = 0; i < pageNodes.length; i++) {
+        const pageEl = pageNodes[i];
+        const canvas = await html2canvas(pageEl, {
+          scale: 3,
+          useCORS: true,
+          backgroundColor: "#ffffff",
+        });
+        const imgData = canvas.toDataURL("image/png");
+        const imgWidthMM = pageWidthMM - marginMM * 2;
+        const imgHeightMM = (canvas.height * imgWidthMM) / canvas.width;
+        if (i > 0) pdf.addPage("a5", "portrait");
+        pdf.addImage(
+          imgData,
+          "PNG",
+          marginMM,
+          marginMM,
+          imgWidthMM,
+          imgHeightMM,
+          undefined,
+          "FAST"
+        );
+      }
+
+      pdf.save(`receipt-${bill.jobId}.pdf`);
+    } finally {
+      setBillForPdf(null);
+    }
   };
 
   if (loading) {
@@ -443,6 +500,15 @@ export default function PaymentsPage() {
                           <TableCell>
                             <div className="flex gap-2">
                               <PrintableCreditBill bill={bill} />
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                className="gap-2"
+                                onClick={() => downloadReceiptPdf(bill)}
+                              >
+                                <FileDown className="h-4 w-4" />
+                                Download PDF
+                              </Button>
                             </div>
                           </TableCell>
                         </TableRow>
@@ -453,6 +519,20 @@ export default function PaymentsPage() {
               </CardContent>
             </Card>
           )}
+        </div>
+        {/* Hidden offscreen area to render receipt for PDF */}
+        <div
+          ref={hiddenRef}
+          style={{
+            position: "absolute",
+            left: -99999,
+            top: -99999,
+            width: "148mm",
+            minHeight: "210mm",
+            background: "#ffffff",
+          }}
+        >
+          {billForPdf && <PrintableReceipt billData={billForPdf} task={null} />}
         </div>
       </div>
     </DashboardLayout>

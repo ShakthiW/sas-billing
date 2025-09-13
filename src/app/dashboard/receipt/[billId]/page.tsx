@@ -56,9 +56,10 @@ export default function ReceiptPage() {
     });
     const pageWidthMM = pdf.internal.pageSize.getWidth();
     const pageHeightMM = pdf.internal.pageSize.getHeight();
+    const marginMM = 4; // small outer margin in PDF
 
     // Map full canvas width to A5 width, maintain aspect ratio
-    const imgWidthMM = pageWidthMM;
+    const imgWidthMM = pageWidthMM - marginMM * 2;
     const imgHeightMM = (canvas.height * imgWidthMM) / canvas.width;
 
     if (imgHeightMM <= pageHeightMM) {
@@ -66,8 +67,8 @@ export default function ReceiptPage() {
       pdf.addImage(
         imgData,
         "PNG",
-        0,
-        0,
+        marginMM,
+        marginMM,
         imgWidthMM,
         imgHeightMM,
         undefined,
@@ -104,8 +105,8 @@ export default function ReceiptPage() {
         pdf.addImage(
           pageImg,
           "PNG",
-          0,
-          0,
+          marginMM,
+          marginMM,
           imgWidthMM,
           sliceHeightMM,
           undefined,
