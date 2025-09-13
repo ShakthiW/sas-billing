@@ -24,7 +24,7 @@ import {
   DollarSign,
   Table,
   Key,
-  RefreshCw
+  RefreshCw,
 } from "lucide-react";
 import Link from "next/link";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
@@ -127,7 +127,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     });
 
     // Managers and admins can view and approve all requests
-    if (role !== 'staff') {
+    if (role !== "staff") {
       approvalItems.push({
         title: "Approval Management",
         url: "/dashboard/approvals",
@@ -187,7 +187,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     }
 
     // Add Admin-only sections
-    if (role === 'admin') {
+    if (role === "admin") {
       navItems.push({
         title: "Admin Tools",
         url: "#",
@@ -207,6 +207,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             title: "Services & Parts",
             url: "/dashboard/admin/services-parts",
             icon: Package,
+          },
+          {
+            title: "Manage Companies",
+            url: "/dashboard/admin/companies",
+            icon: Users,
           },
           {
             title: "Password Management",
@@ -279,19 +284,25 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                               onClick={subItem.onClick}
                               className="flex items-center gap-2 w-full"
                             >
-                              {subItem.icon && <subItem.icon className="w-4 h-4" />}
+                              {subItem.icon && (
+                                <subItem.icon className="w-4 h-4" />
+                              )}
                               {subItem.title}
                             </button>
                           ) : subItem.url ? (
                             <Link href={subItem.url}>
                               <div className="flex items-center gap-2">
-                                {subItem.icon && <subItem.icon className="w-4 h-4" />}
+                                {subItem.icon && (
+                                  <subItem.icon className="w-4 h-4" />
+                                )}
                                 <span>{subItem.title}</span>
                               </div>
                             </Link>
                           ) : (
                             <span className="flex items-center gap-2">
-                              {subItem.icon && <subItem.icon className="w-4 h-4" />}
+                              {subItem.icon && (
+                                <subItem.icon className="w-4 h-4" />
+                              )}
                               {subItem.title}
                             </span>
                           )}

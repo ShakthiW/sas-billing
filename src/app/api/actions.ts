@@ -79,6 +79,9 @@ export async function createJob(formData: FormData) {
       formData.get("customerPhone")?.toString()?.trim() || "";
     const damageRemarks =
       formData.get("damageRemarks")?.toString()?.trim() || "";
+    const isCompanyVehicleString =
+      formData.get("isCompanyVehicle")?.toString() || "false";
+    const companyName = formData.get("companyName")?.toString()?.trim() || "";
     const subTasksString = formData.get("subTasks")?.toString() || "[]";
     const status = formData.get("status")?.toString() || "todo";
     const imagesString = formData.get("images")?.toString() || "[]";
@@ -155,6 +158,18 @@ export async function createJob(formData: FormData) {
       status,
       image: formData.get("image")?.toString()?.trim() || images[0] || "",
       damagePhotos,
+      // New company fields
+      isCompanyVehicle:
+        isCompanyVehicleString === "true" ||
+        isCompanyVehicleString === "1" ||
+        isCompanyVehicleString === "on",
+      companyName:
+        (isCompanyVehicleString === "true" ||
+          isCompanyVehicleString === "1" ||
+          isCompanyVehicleString === "on") &&
+        companyName
+          ? companyName
+          : "",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -227,6 +242,8 @@ export async function getAllJobs() {
         customerPhone: job.customerPhone, // Add customer phone for search
         damageRemarks: job.damageRemarks, // Add damage remarks for search
         damagePhotos: job.damagePhotos, // Add damage photos
+        isCompanyVehicle: job.isCompanyVehicle,
+        companyName: job.companyName,
         createdAt: job.createdAt,
         updatedAt: job.updatedAt,
       };

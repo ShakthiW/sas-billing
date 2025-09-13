@@ -35,25 +35,42 @@ export const amountSchema = z
   .refine((val) => parseFloat(val) > 0, "Amount must be greater than 0");
 
 // Job creation validation schema - customer details are optional at initiation
-export const jobFormSchema = z.object({
-  vehicleNo: vehicleNumberSchema,
-  customerName: customerNameSchema.optional().or(z.literal("")),
-  customerPhone: phoneNumberSchema.optional().or(z.literal("")),
-  damageRemarks: z.string().max(500, "Remarks too long").optional(),
-  status: z.enum(["todo", "inProgress", "finished", "delivered"]),
-  subTasks: z
-    .array(
-      z.object({
-        subtaskID: z.string(),
-        taskType: z.enum(["parts", "service"]),
-        serviceType: z.string().optional(),
-        partsType: z.string().optional(),
-        partsBrand: z.string().optional(),
-        isCompleted: z.boolean(),
-      })
-    )
-    .optional(),
-});
+export const jobFormSchema = z
+  .object({
+    vehicleNo: vehicleNumberSchema,
+    customerName: customerNameSchema.optional().or(z.literal("")),
+    customerPhone: phoneNumberSchema.optional().or(z.literal("")),
+    damageRemarks: z.string().max(500, "Remarks too long").optional(),
+    status: z.enum(["todo", "inProgress", "finished", "delivered"]),
+    // New fields for company vehicles
+    isCompanyVehicle: z.boolean().optional().default(false),
+    companyName: z.string().max(100).optional().or(z.literal("")),
+    subTasks: z
+      .array(
+        z.object({
+          subtaskID: z.string(),
+          taskType: z.enum(["parts", "service"]),
+          serviceType: z.string().optional(),
+          partsType: z.string().optional(),
+          partsBrand: z.string().optional(),
+          isCompleted: z.boolean(),
+        })
+      )
+      .optional(),
+  })
+  .refine(
+    (data) => {
+      // If company vehicle is selected, require a company name
+      if (data.isCompanyVehicle) {
+        return (data.companyName ?? "").trim().length > 0;
+      }
+      return true;
+    },
+    {
+      message: "Company name is required for company vehicles",
+      path: ["companyName"],
+    }
+  );
 
 // Billing form validation schema
 export const billingFormSchema = z

@@ -63,6 +63,7 @@ export default function BillingPage() {
   const [clientType, setClientType] = useState<"Customer" | "Company">(
     "Customer"
   );
+  const [companyName, setCompanyName] = useState<string>("");
   const [paymentType, setPaymentType] = useState<
     "Cash" | "Credit" | "Cheque" | "Unspecified"
   >("Unspecified");
@@ -176,6 +177,11 @@ export default function BillingPage() {
           }
           if (finishedTask.customerPhone) {
             setCustomerPhone(finishedTask.customerPhone);
+          }
+          // Auto-fill client type and company name if this is a company vehicle
+          if ((finishedTask as any).isCompanyVehicle) {
+            setClientType("Company");
+            setCompanyName((finishedTask as any).companyName || "");
           }
         }
 
@@ -761,6 +767,17 @@ export default function BillingPage() {
                           </SelectContent>
                         </Select>
                       </div>
+                      {clientType === "Company" && (
+                        <div className="space-y-2">
+                          <Label htmlFor="companyName">Company Name</Label>
+                          <Input
+                            id="companyName"
+                            value={companyName}
+                            onChange={(e) => setCompanyName(e.target.value)}
+                            placeholder="Company name"
+                          />
+                        </div>
+                      )}
                     </div>
                     <div className="grid grid-cols-1 ipad:grid-cols-2 gap-4">
                       <div className="space-y-2">

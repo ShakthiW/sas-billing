@@ -36,6 +36,9 @@ export interface Task {
   customerPhone?: string;
   damageRemarks?: string; // Damage notes and remarks
   damagePhotos?: string[]; // URLs for damage documentation
+  // Company vehicle fields
+  isCompanyVehicle?: boolean;
+  companyName?: string;
   createdBy?: string; // User ID who created the task
   updatedBy?: string; // User ID who last updated
   createdAt?: Date; // Job creation time

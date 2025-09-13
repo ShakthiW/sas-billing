@@ -23,6 +23,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   jobFormSchema,
   validateAndSanitize,
@@ -90,12 +91,33 @@ const Dashboard = () => {
   const [uploadTask, setUploadTask] = useState<any>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
+  const [isCompanyVehicle, setIsCompanyVehicle] = useState(false);
+  const [companyName, setCompanyName] = useState("");
+  const [companies, setCompanies] = useState<{ _id: string; name: string }[]>(
+    []
+  );
   const queryClient = useQueryClient();
 
   useHotkeys("shift+l", () => setIsOpen(true));
 
   const subTasksRef = useRef<SubTask[]>([]); // Start with empty subtasks - not mandatory
   const [subtasks, setSubtasks] = useState<SubTask[]>([]); // Start with empty subtasks
+
+  // Load companies for the company dropdown
+  useEffect(() => {
+    const loadCompanies = async () => {
+      try {
+        const res = await fetch("/api/companies");
+        if (res.ok) {
+          const data = await res.json();
+          setCompanies(data);
+        }
+      } catch (err) {
+        console.error("Failed to load companies", err);
+      }
+    };
+    loadCompanies();
+  }, []);
 
   // Fetch today's completed jobs count and income for admin users
   useEffect(() => {
@@ -166,6 +188,8 @@ const Dashboard = () => {
       customerPhone: customerPhone || "",
       damageRemarks: damageRemarks,
       status: status,
+      isCompanyVehicle,
+      companyName: isCompanyVehicle ? companyName : "",
       subTasks:
         subTasksRef.current.length > 0 ? subTasksRef.current : undefined,
     };
@@ -189,6 +213,8 @@ const Dashboard = () => {
     setCustomerName(sanitizedData.customerName || "");
     setCustomerPhone(sanitizedData.customerPhone || "");
     setDamageRemarks(sanitizedData.damageRemarks || "");
+    setIsCompanyVehicle(Boolean((sanitizedData as any).isCompanyVehicle));
+    setCompanyName((sanitizedData as any).companyName || "");
 
     const formElement = e.currentTarget;
     // We'll create the job immediately, then upload in background
@@ -210,6 +236,16 @@ const Dashboard = () => {
       JSON.stringify(sanitizedData.subTasks || [])
     );
     submitFormData.set("status", sanitizedData.status);
+    submitFormData.set(
+      "isCompanyVehicle",
+      String((sanitizedData as any).isCompanyVehicle || false)
+    );
+    submitFormData.set(
+      "companyName",
+      ((sanitizedData as any).isCompanyVehicle &&
+        (sanitizedData as any).companyName) ||
+        ""
+    );
     // Create job immediately without waiting for uploads
 
     console.log(
@@ -232,6 +268,8 @@ const Dashboard = () => {
           setCustomerName("");
           setCustomerPhone("");
           setDamageRemarks("");
+          setIsCompanyVehicle(false);
+          setCompanyName("");
           setLocalImageFile([]);
           setDamageImageFiles([]);
           setUploadTask(null);
@@ -392,6 +430,56 @@ const Dashboard = () => {
 
                                 {/* Customer Information */}
                                 <div className="space-y-4">
+                                  <div className="flex items-center space-x-2">
+                                    <Checkbox
+                                      id="isCompanyVehicle"
+                                      checked={isCompanyVehicle}
+                                      onCheckedChange={(checked) => {
+                                        const value = Boolean(checked);
+                                        setIsCompanyVehicle(value);
+                                        if (!value) setCompanyName("");
+                                      }}
+                                    />
+                                    <Label htmlFor="isCompanyVehicle">
+                                      Company Vehicle
+                                    </Label>
+                                  </div>
+                                  {isCompanyVehicle && (
+                                    <div className="space-y-2">
+                                      <Label htmlFor="companyName">
+                                        Company
+                                      </Label>
+                                      <Select
+                                        value={companyName}
+                                        onValueChange={setCompanyName}
+                                      >
+                                        <SelectTrigger>
+                                          <SelectValue placeholder="Select a company" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {companies && companies.length > 0 ? (
+                                            companies.map((c) => (
+                                              <SelectItem
+                                                key={c._id}
+                                                value={c.name}
+                                              >
+                                                {c.name}
+                                              </SelectItem>
+                                            ))
+                                          ) : (
+                                            <SelectItem value="SAS Enterprise">
+                                              SAS Enterprise
+                                            </SelectItem>
+                                          )}
+                                        </SelectContent>
+                                      </Select>
+                                      {formErrors.companyName && (
+                                        <p className="text-sm text-red-500">
+                                          {formErrors.companyName}
+                                        </p>
+                                      )}
+                                    </div>
+                                  )}
                                   <div className="space-y-2">
                                     <Label htmlFor="customerName">
                                       Customer Name{" "}
