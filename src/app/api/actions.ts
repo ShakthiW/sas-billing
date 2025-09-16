@@ -991,7 +991,7 @@ export async function recordCreditPayment(
       newBalance: finalRemainingBalance,
     };
 
-    await db.collection("credit_payments").insertOne(payment, { session });
+    await db.collection("creditPayments").insertOne(payment, { session });
 
     // Update the bill's remaining balance and status
     const updateResult = await db.collection("bills").updateOne(
@@ -1088,7 +1088,7 @@ export async function getCreditPaymentHistory(
     const db = await connectToDatabase();
 
     const payments = await db
-      .collection("credit_payments")
+      .collection("creditPayments")
       .find({ billId })
       .sort({ createdAt: -1 })
       .toArray();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Card,
   CardContent,
@@ -29,6 +29,7 @@ import {
 import { toast } from "@/hooks/use-toast";
 import { Bill, CreditPayment } from "@/app/types";
 import { getAllCreditBills } from "@/app/api/actions";
+import { getAllCreditPayments } from "@/app/api/actions";
 import {
   DollarSign,
   TrendingUp,
@@ -45,6 +46,7 @@ import jsPDF from "jspdf";
 
 export default function PaymentsPage() {
   const [creditBills, setCreditBills] = useState<Bill[]>([]);
+  const [payments, setPayments] = useState<CreditPayment[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const [vehicleSearch, setVehicleSearch] = useState("");
@@ -53,15 +55,45 @@ export default function PaymentsPage() {
   const [billForPdf, setBillForPdf] = useState<Bill | null>(null);
   const hiddenRef = useRef<HTMLDivElement>(null);
 
+  // Index payments by billId for quick lookup in Payment Records table
+  const paymentsByBillId = useMemo(() => {
+    const map = new Map<string, CreditPayment[]>();
+    for (const p of payments) {
+      const key = p.billId;
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(p);
+    }
+    // Sort each list by paymentDate desc
+    for (const list of map.values()) {
+      list.sort(
+        (a, b) =>
+          new Date(b.paymentDate).getTime() - new Date(a.paymentDate).getTime()
+      );
+    }
+    return map;
+  }, [payments]);
+
   useEffect(() => {
-    fetchCreditBills();
+    fetchAllData();
   }, []);
 
-  const fetchCreditBills = async () => {
+  const fetchAllData = async () => {
     try {
       setLoading(true);
-      const bills = await getAllCreditBills();
+      const [bills, paymentsResult] = await Promise.all([
+        getAllCreditBills(),
+        getAllCreditPayments(50, 0),
+      ]);
       setCreditBills(bills);
+      if (
+        (paymentsResult as any)?.success &&
+        (paymentsResult as any)?.payments
+      ) {
+        setPayments((paymentsResult as any).payments as CreditPayment[]);
+      } else if (Array.isArray(paymentsResult as any)) {
+        // Fallback in case implementation changes to return array directly
+        setPayments(paymentsResult as unknown as CreditPayment[]);
+      }
     } catch (error) {
       console.error("Failed to fetch credit bills:", error);
       toast({
@@ -439,86 +471,177 @@ export default function PaymentsPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Vehicle No</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Job ID</TableHead>
-                      <TableHead>Total Amount</TableHead>
-                      <TableHead>Paid Amount</TableHead>
-                      <TableHead>Outstanding</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Due Status</TableHead>
-                      <TableHead>Last Payment</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredBills.map((bill) => {
-                      const paidAmount =
-                        bill.finalAmount - (bill.remainingBalance || 0);
-                      const dueDateStatus = getDueDateStatus(bill);
+                <div className="w-full overflow-x-auto">
+                  <Table className="min-w-[1100px]">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Vehicle No</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Job ID</TableHead>
+                        <TableHead>Total Amount</TableHead>
+                        <TableHead>Paid Amount</TableHead>
+                        <TableHead>Outstanding</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Due Status</TableHead>
+                        <TableHead>Last Payment</TableHead>
+                        <TableHead>Recent Payment</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {filteredBills.map((bill) => {
+                        const paidAmount =
+                          bill.finalAmount - (bill.remainingBalance || 0);
+                        const dueDateStatus = getDueDateStatus(bill);
 
-                      return (
-                        <TableRow key={bill._id}>
-                          <TableCell className="font-medium">
-                            {bill.vehicleNo}
-                          </TableCell>
-                          <TableCell>{bill.customerName}</TableCell>
-                          <TableCell className="font-mono text-sm">
-                            {bill.jobId}
-                          </TableCell>
-                          <TableCell>
-                            {formatCurrency(bill.finalAmount)}
-                          </TableCell>
-                          <TableCell className="text-green-600 font-medium">
-                            {formatCurrency(paidAmount)}
-                          </TableCell>
-                          <TableCell className="text-red-600 font-medium">
-                            {formatCurrency(bill.remainingBalance || 0)}
-                          </TableCell>
-                          <TableCell>
-                            <Badge className={getStatusColor(bill.status!)}>
-                              {bill.status === "partially_paid"
-                                ? "Partial"
-                                : bill.status}
-                            </Badge>
-                          </TableCell>
-                          <TableCell>
-                            {dueDateStatus ? (
-                              <Badge className={dueDateStatus.color}>
-                                {dueDateStatus.label}
+                        return (
+                          <TableRow key={bill._id}>
+                            <TableCell className="font-medium">
+                              {bill.vehicleNo}
+                            </TableCell>
+                            <TableCell>{bill.customerName}</TableCell>
+                            <TableCell className="font-mono text-sm">
+                              {bill.jobId}
+                            </TableCell>
+                            <TableCell>
+                              {formatCurrency(bill.finalAmount)}
+                            </TableCell>
+                            <TableCell className="text-green-600 font-medium">
+                              {formatCurrency(paidAmount)}
+                            </TableCell>
+                            <TableCell className="text-red-600 font-medium">
+                              {formatCurrency(bill.remainingBalance || 0)}
+                            </TableCell>
+                            <TableCell>
+                              <Badge className={getStatusColor(bill.status!)}>
+                                {bill.status === "partially_paid"
+                                  ? "Partial"
+                                  : bill.status}
                               </Badge>
-                            ) : (
-                              <span className="text-muted-foreground">-</span>
-                            )}
-                          </TableCell>
-                          <TableCell>
-                            {formatDate(bill.lastPaymentDate)}
-                          </TableCell>
-                          <TableCell>
-                            <div className="flex gap-2">
-                              <PrintableCreditBill bill={bill} />
-                              <Button
-                                variant="secondary"
-                                size="sm"
-                                className="gap-2"
-                                onClick={() => downloadReceiptPdf(bill)}
-                              >
-                                <FileDown className="h-4 w-4" />
-                                Download PDF
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
-                  </TableBody>
-                </Table>
+                            </TableCell>
+                            <TableCell>
+                              {dueDateStatus ? (
+                                <Badge className={dueDateStatus.color}>
+                                  {dueDateStatus.label}
+                                </Badge>
+                              ) : (
+                                <span className="text-muted-foreground">-</span>
+                              )}
+                            </TableCell>
+                            <TableCell>
+                              {formatDate(bill.lastPaymentDate)}
+                            </TableCell>
+                            <TableCell>
+                              {(() => {
+                                const recent = paymentsByBillId.get(
+                                  bill._id || ""
+                                )?.[0];
+                                if (!recent)
+                                  return (
+                                    <span className="text-muted-foreground">
+                                      -
+                                    </span>
+                                  );
+                                return (
+                                  <div className="flex items-center gap-2">
+                                    <span className="text-green-600 font-medium">
+                                      {formatCurrency(recent.paymentAmount)}
+                                    </span>
+                                    <Badge variant="outline">
+                                      {recent.paymentMethod}
+                                    </Badge>
+                                  </div>
+                                );
+                              })()}
+                            </TableCell>
+                            <TableCell>
+                              <div className="flex gap-2">
+                                <PrintableCreditBill bill={bill} />
+                                <Button
+                                  variant="secondary"
+                                  size="sm"
+                                  className="gap-2"
+                                  onClick={() => downloadReceiptPdf(bill)}
+                                >
+                                  <FileDown className="h-4 w-4" />
+                                  Download PDF
+                                </Button>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </Table>
+                </div>
               </CardContent>
             </Card>
           )}
+
+          {/* Recent Payments */}
+          <Card className="mt-6">
+            <CardHeader>
+              <CardTitle>Recent Payments ({payments.length})</CardTitle>
+              <CardDescription>
+                Latest recorded payments with quick access to receipts
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              {payments.length === 0 ? (
+                <div className="text-center py-8 text-muted-foreground">
+                  No payments recorded yet
+                </div>
+              ) : (
+                <div className="w-full overflow-x-auto">
+                  <Table className="min-w-[900px]">
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Date</TableHead>
+                        <TableHead>Vehicle</TableHead>
+                        <TableHead>Customer</TableHead>
+                        <TableHead>Amount</TableHead>
+                        <TableHead>Method</TableHead>
+                        <TableHead>Notes</TableHead>
+                        <TableHead>Receipt</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {payments.map((p) => (
+                        <TableRow key={p._id}>
+                          <TableCell>{formatDate(p.paymentDate)}</TableCell>
+                          <TableCell className="font-medium">
+                            {p.vehicleNo}
+                          </TableCell>
+                          <TableCell>{p.customerName}</TableCell>
+                          <TableCell className="text-green-600 font-medium">
+                            {formatCurrency(p.paymentAmount)}
+                          </TableCell>
+                          <TableCell>
+                            <Badge variant="outline">{p.paymentMethod}</Badge>
+                          </TableCell>
+                          <TableCell className="max-w-[240px] truncate">
+                            {p.notes || "-"}
+                          </TableCell>
+                          <TableCell>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => {
+                                // Use jobId to always show the latest updated receipt
+                                window.location.href = `/dashboard/receipt/${p.jobId}`;
+                              }}
+                            >
+                              View
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </div>
         {/* Hidden offscreen area to render receipt for PDF */}
         <div

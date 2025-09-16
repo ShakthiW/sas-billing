@@ -29,13 +29,6 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { Bill, CreditPayment } from "@/app/types";
@@ -299,79 +292,85 @@ export default function CreditBillsPage() {
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Vehicle No</TableHead>
-                    <TableHead>Customer</TableHead>
-                    <TableHead>Total Amount</TableHead>
-                    <TableHead>Remaining</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Last Payment</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {creditBills.map((bill) => (
-                    <TableRow key={bill._id}>
-                      <TableCell className="font-medium">
-                        {bill.vehicleNo}
-                      </TableCell>
-                      <TableCell>{bill.customerName}</TableCell>
-                      <TableCell>{formatCurrency(bill.finalAmount)}</TableCell>
-                      <TableCell>
-                        <span className="font-semibold text-red-600">
-                          {formatCurrency(bill.remainingBalance || 0)}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant={
-                            bill.status === "partially_paid"
-                              ? "destructive"
-                              : "secondary"
-                          }
-                        >
-                          {bill.status === "partially_paid"
-                            ? "Partial"
-                            : bill.status}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{formatDate(bill.lastPaymentDate)}</TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() =>
-                              router.push(`/dashboard/receipt/${bill._id}`)
+              <div className="w-full overflow-x-auto">
+                <Table className="min-w-[1000px]">
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Vehicle No</TableHead>
+                      <TableHead>Customer</TableHead>
+                      <TableHead>Total Amount</TableHead>
+                      <TableHead>Remaining</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Last Payment</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {creditBills.map((bill) => (
+                      <TableRow key={bill._id}>
+                        <TableCell className="font-medium">
+                          {bill.vehicleNo}
+                        </TableCell>
+                        <TableCell>{bill.customerName}</TableCell>
+                        <TableCell>
+                          {formatCurrency(bill.finalAmount)}
+                        </TableCell>
+                        <TableCell>
+                          <span className="font-semibold text-red-600">
+                            {formatCurrency(bill.remainingBalance || 0)}
+                          </span>
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            variant={
+                              bill.status === "partially_paid"
+                                ? "destructive"
+                                : "secondary"
                             }
                           >
-                            <FileText className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleShowHistory(bill)}
-                          >
-                            <History className="w-4 h-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => {
-                              setSelectedBill(bill);
-                              setShowPaymentDialog(true);
-                            }}
-                          >
-                            <DollarSign className="w-4 h-4 mr-1" />
-                            Record Payment
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                            {bill.status === "partially_paid"
+                              ? "Partial"
+                              : bill.status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {formatDate(bill.lastPaymentDate)}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() =>
+                                router.push(`/dashboard/receipt/${bill.jobId}`)
+                              }
+                            >
+                              <FileText className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleShowHistory(bill)}
+                            >
+                              <History className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              onClick={() => {
+                                setSelectedBill(bill);
+                                setShowPaymentDialog(true);
+                              }}
+                            >
+                              <DollarSign className="w-4 h-4 mr-1" />
+                              Record Payment
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
             </CardContent>
           </Card>
         )}
