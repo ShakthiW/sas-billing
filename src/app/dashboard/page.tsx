@@ -23,6 +23,7 @@ import {
   SelectContent,
   SelectItem,
 } from "@/components/ui/select";
+import CompanyCombobox from "@/components/CompanyCombobox";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   jobFormSchema,
@@ -449,30 +450,12 @@ const Dashboard = () => {
                                       <Label htmlFor="companyName">
                                         Company
                                       </Label>
-                                      <Select
+                                      <CompanyCombobox
+                                        companies={companies}
                                         value={companyName}
-                                        onValueChange={setCompanyName}
-                                      >
-                                        <SelectTrigger>
-                                          <SelectValue placeholder="Select a company" />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                          {companies && companies.length > 0 ? (
-                                            companies.map((c) => (
-                                              <SelectItem
-                                                key={c._id}
-                                                value={c.name}
-                                              >
-                                                {c.name}
-                                              </SelectItem>
-                                            ))
-                                          ) : (
-                                            <SelectItem value="SAS Enterprises">
-                                              SAS Enterprises
-                                            </SelectItem>
-                                          )}
-                                        </SelectContent>
-                                      </Select>
+                                        onChange={setCompanyName}
+                                        placeholder="Select a company"
+                                      />
                                       {formErrors.companyName && (
                                         <p className="text-sm text-red-500">
                                           {formErrors.companyName}
