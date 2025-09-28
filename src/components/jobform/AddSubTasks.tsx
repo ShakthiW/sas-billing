@@ -443,7 +443,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
       </div>
 
       <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
-        <DialogContent className="max-w-md max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-7xl w-[90vw] h-[50vh] md:h-[75vh] max-h-[50vh] md:max-h-[75vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
               {menuStep === "main"
@@ -464,33 +464,43 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
 
           {/* Main Menu */}
           {menuStep === "main" && (
-            <div className="flex flex-col gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
               <Button
                 type="button"
                 variant="outline"
+                size="lg"
+                className="h-24"
                 onClick={() => {
                   setMenuStep("services");
                   if (services.length === 0) fetchServices();
                 }}
               >
-                Service
+                <div className="flex flex-col items-center">
+                  <span className="text-3xl mb-2">🔧</span>
+                  <span className="text-lg font-medium">Service</span>
+                </div>
               </Button>
               <Button
                 type="button"
                 variant="outline"
+                size="lg"
+                className="h-24"
                 onClick={() => {
                   setMenuStep("parts");
                   if (parts.length === 0) fetchParts();
                 }}
               >
-                Add Part
+                <div className="flex flex-col items-center">
+                  <span className="text-3xl mb-2">⚙️</span>
+                  <span className="text-lg font-medium">Add Part</span>
+                </div>
               </Button>
-              <div className="relative">
+              <div className="col-span-2 relative">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t" />
                 </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">
+                <div className="relative flex justify-center text-sm uppercase">
+                  <span className="bg-background px-4 text-muted-foreground">
                     Or create new
                   </span>
                 </div>
@@ -498,55 +508,71 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
               <Button
                 type="button"
                 variant="secondary"
+                size="lg"
+                className="h-20"
                 onClick={() => setMenuStep("addService")}
               >
-                <Plus className="mr-2 h-4 w-4" />
-                Create New Service
+                <Plus className="mr-3 h-5 w-5" />
+                <span className="text-base font-medium">
+                  Create New Service
+                </span>
               </Button>
               <Button
                 type="button"
                 variant="secondary"
+                size="lg"
+                className="h-20"
                 onClick={() => setMenuStep("addPart")}
               >
-                <Plus className="mr-2 h-4 w-4" />
-                Create New Part
+                <Plus className="mr-3 h-5 w-5" />
+                <span className="text-base font-medium">Create New Part</span>
               </Button>
             </div>
           )}
 
           {/* Services Menu */}
           {menuStep === "services" && (
-            <div className="space-y-3">
+            <div className="space-y-6 p-6">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search services..."
                   value={serviceSearch}
                   onChange={(e) => setServiceSearch(e.target.value)}
-                  className="pl-8"
+                  className="pl-8 h-12"
                 />
               </div>
               {loading ? (
-                <div className="flex justify-center py-4">
-                  <Loader2 className="h-6 w-6 animate-spin" />
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
                     {filteredServices.map((service) => (
                       <Button
                         key={service.serviceId || service.name}
                         type="button"
                         variant="outline"
+                        size="lg"
+                        className="h-16 p-4"
                         onClick={() => handleSelectService(service)}
                       >
-                        {service.name}
+                        <div className="flex flex-col items-center text-center">
+                          <span className="text-lg mb-1">🔧</span>
+                          <span className="truncate w-full">
+                            {service.name}
+                          </span>
+                        </div>
                       </Button>
                     ))}
                   </div>
                   {filteredServices.length === 0 && (
-                    <div className="text-center text-muted-foreground py-4">
-                      No services found. Create a new one?
+                    <div className="text-center text-muted-foreground py-8">
+                      <div className="text-4xl mb-2">🔍</div>
+                      <p className="text-lg">
+                        No services found. Create a new one?
+                      </p>
                     </div>
                   )}
                 </>
@@ -556,37 +582,45 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
 
           {/* Parts Menu */}
           {menuStep === "parts" && (
-            <div className="space-y-3">
+            <div className="space-y-6 p-6">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search parts..."
                   value={partSearch}
                   onChange={(e) => setPartSearch(e.target.value)}
-                  className="pl-8"
+                  className="pl-8 h-12"
                 />
               </div>
               {loading ? (
-                <div className="flex justify-center py-4">
-                  <Loader2 className="h-6 w-6 animate-spin" />
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
                     {uniqueParts.map((part) => (
                       <Button
                         key={part.partId || part.name}
                         type="button"
                         variant="outline"
+                        size="lg"
+                        className="h-16 p-4"
                         onClick={() => handleSelectPartType(part)}
                       >
-                        {part.name}
+                        <div className="flex flex-col items-center text-center">
+                          <span className="text-lg mb-1">⚙️</span>
+                          <span className="truncate w-full">{part.name}</span>
+                        </div>
                       </Button>
                     ))}
                   </div>
                   {uniqueParts.length === 0 && (
-                    <div className="text-center text-muted-foreground py-4">
-                      No parts found. Create a new one?
+                    <div className="text-center text-muted-foreground py-8">
+                      <div className="text-4xl mb-2">🔍</div>
+                      <p className="text-lg">
+                        No parts found. Create a new one?
+                      </p>
                     </div>
                   )}
                 </>
@@ -596,37 +630,43 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
 
           {/* Brands Menu */}
           {menuStep === "brands" && (
-            <div className="space-y-3">
+            <div className="space-y-6 p-6">
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Search brands..."
                   value={brandSearch}
                   onChange={(e) => setBrandSearch(e.target.value)}
-                  className="pl-8"
+                  className="pl-8 h-12"
                 />
               </div>
               {loading ? (
-                <div className="flex justify-center py-4">
-                  <Loader2 className="h-6 w-6 animate-spin" />
+                <div className="flex justify-center py-8">
+                  <Loader2 className="h-8 w-8 animate-spin" />
                 </div>
               ) : (
                 <>
-                  <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
+                  <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
                     {filteredBrands.map((brand) => (
                       <Button
                         key={brand}
                         type="button"
                         variant="outline"
+                        size="lg"
+                        className="h-16 p-4"
                         onClick={() => handleSelectBrand(brand)}
                       >
-                        {brand}
+                        <div className="flex flex-col items-center text-center">
+                          <span className="text-lg mb-1">🏷️</span>
+                          <span className="truncate w-full">{brand}</span>
+                        </div>
                       </Button>
                     ))}
                   </div>
                   {filteredBrands.length === 0 && (
-                    <div className="text-center text-muted-foreground py-4">
-                      No brands found
+                    <div className="text-center text-muted-foreground py-8">
+                      <div className="text-4xl mb-2">🔍</div>
+                      <p className="text-lg">No brands found</p>
                     </div>
                   )}
                 </>
@@ -636,47 +676,59 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
 
           {/* Add New Service Form */}
           {menuStep === "addService" && (
-            <div className="space-y-4">
-              <div className="space-y-2">
+            <div className="space-y-6 p-6">
+              <div className="space-y-3">
                 <Label htmlFor="serviceName">Service Name *</Label>
                 <Input
                   id="serviceName"
                   placeholder="e.g., Oil Change, AC Service"
                   value={newServiceName}
                   onChange={(e) => setNewServiceName(e.target.value)}
+                  className="h-12"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="serviceCategory">Category (Optional)</Label>
+              <div className="space-y-3">
+                <Label htmlFor="serviceCategory" className="">
+                  Category (Optional)
+                </Label>
                 <Input
                   id="serviceCategory"
                   placeholder="e.g., Maintenance, Repair"
                   value={newServiceCategory}
                   onChange={(e) => setNewServiceCategory(e.target.value)}
+                  className="h-12"
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="serviceDescription">Description</Label>
+              <div className="space-y-3">
+                <Label htmlFor="serviceDescription" className="">
+                  Description
+                </Label>
                 <Input
                   id="serviceDescription"
                   placeholder="Brief description of the service"
                   value={newServiceDescription}
                   onChange={(e) => setNewServiceDescription(e.target.value)}
+                  className="h-12"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="serviceDuration">Duration (minutes)</Label>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="serviceDuration" className="">
+                    Duration (minutes)
+                  </Label>
                   <Input
                     id="serviceDuration"
                     type="number"
                     placeholder="e.g., 30"
                     value={newServiceDuration}
                     onChange={(e) => setNewServiceDuration(e.target.value)}
+                    className="h-12"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="servicePrice">Default Price (Rs.)</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="servicePrice" className="">
+                    Default Price (Rs.)
+                  </Label>
                   <Input
                     id="servicePrice"
                     type="number"
@@ -684,6 +736,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                     placeholder="e.g., 1500"
                     value={newServicePrice}
                     onChange={(e) => setNewServicePrice(e.target.value)}
+                    className="h-12"
                   />
                 </div>
               </div>
@@ -691,11 +744,11 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                 type="button"
                 onClick={handleCreateService}
                 disabled={loading || !newServiceName.trim()}
-                className="w-full"
+                className="w-full h-14"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-3 h-5 w-5 animate-spin" />
                     Creating...
                   </>
                 ) : (
@@ -707,59 +760,76 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
 
           {/* Add New Part Form */}
           {menuStep === "addPart" && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="partName">Part Name *</Label>
+            <div className="space-y-6 p-6">
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="partName" className="">
+                    Part Name *
+                  </Label>
                   <Input
                     id="partName"
                     placeholder="e.g., Battery, Air Filter"
                     value={newPartName}
                     onChange={(e) => setNewPartName(e.target.value)}
+                    className="h-12"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="partBrand">Brand *</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="partBrand" className="">
+                    Brand *
+                  </Label>
                   <Input
                     id="partBrand"
                     placeholder="e.g., Bosch, Denso"
                     value={newPartBrand}
                     onChange={(e) => setNewPartBrand(e.target.value)}
+                    className="h-12"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="partCategory">Category</Label>
+              <div className="grid grid-cols-2 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="partCategory" className="">
+                    Category
+                  </Label>
                   <Input
                     id="partCategory"
                     placeholder="e.g., Electrical, Engine"
                     value={newPartCategory}
                     onChange={(e) => setNewPartCategory(e.target.value)}
+                    className="h-12"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="partNumber">Part Number</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="partNumber" className="">
+                    Part Number
+                  </Label>
                   <Input
                     id="partNumber"
                     placeholder="e.g., BOS-12V-65AH"
                     value={newPartNumber}
                     onChange={(e) => setNewPartNumber(e.target.value)}
+                    className="h-12"
                   />
                 </div>
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="partDescription">Description</Label>
+              <div className="space-y-3">
+                <Label htmlFor="partDescription" className="">
+                  Description
+                </Label>
                 <Input
                   id="partDescription"
                   placeholder="Brief description of the part"
                   value={newPartDescription}
                   onChange={(e) => setNewPartDescription(e.target.value)}
+                  className="h-12"
                 />
               </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="partPrice">Default Price (Rs.)</Label>
+              <div className="grid grid-cols-3 gap-6">
+                <div className="space-y-3">
+                  <Label htmlFor="partPrice" className="">
+                    Default Price (Rs.)
+                  </Label>
                   <Input
                     id="partPrice"
                     type="number"
@@ -767,26 +837,33 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                     placeholder="e.g., 5000"
                     value={newPartPrice}
                     onChange={(e) => setNewPartPrice(e.target.value)}
+                    className="h-12"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="partStock">Stock Quantity</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="partStock" className="">
+                    Stock Quantity
+                  </Label>
                   <Input
                     id="partStock"
                     type="number"
                     placeholder="e.g., 10"
                     value={newPartStock}
                     onChange={(e) => setNewPartStock(e.target.value)}
+                    className="h-12"
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="partMinStock">Min Stock Level</Label>
+                <div className="space-y-3">
+                  <Label htmlFor="partMinStock" className="">
+                    Min Stock Level
+                  </Label>
                   <Input
                     id="partMinStock"
                     type="number"
                     placeholder="e.g., 2"
                     value={newPartMinStock}
                     onChange={(e) => setNewPartMinStock(e.target.value)}
+                    className="h-12"
                   />
                 </div>
               </div>
@@ -796,11 +873,11 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                 disabled={
                   loading || !newPartName.trim() || !newPartBrand.trim()
                 }
-                className="w-full"
+                className="w-full h-14"
               >
                 {loading ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-3 h-5 w-5 animate-spin" />
                     Creating...
                   </>
                 ) : (
@@ -812,8 +889,14 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
 
           {/* Back Button */}
           {menuStep !== "main" && (
-            <div className="mt-4">
-              <Button type="button" variant="outline" onClick={handleBack}>
+            <div className="mt-6 px-6 pb-6">
+              <Button
+                type="button"
+                variant="outline"
+                size="lg"
+                className="h-12"
+                onClick={handleBack}
+              >
                 ← Back
               </Button>
             </div>
