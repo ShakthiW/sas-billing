@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams } from "next/navigation";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import QuotationGenerator from "@/components/QuotationGenerator";
 import PrintableQuotation from "@/components/PrintableQuotation";
 import { Quotation } from "@/app/types";
+import { useReactToPrint } from "react-to-print";
 
 export default function QuotationDetailPage() {
   const params = useParams();
@@ -20,6 +21,24 @@ export default function QuotationDetailPage() {
   const [quotation, setQuotation] = useState<Quotation | null>(null);
   const [loading, setLoading] = useState(true);
   const [pdfBlob, setPdfBlob] = useState<Blob | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
+  
+  const handlePrint = useReactToPrint({
+    contentRef,
+    documentTitle: `Quotation-${id}`,
+    pageStyle: `
+      @page {
+        size: A5;
+        margin: 10mm;
+      }
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+        }
+      }
+    `,
+  });
 
   useEffect(() => {
     const load = async () => {
@@ -141,7 +160,7 @@ export default function QuotationDetailPage() {
               <div className="flex justify-end gap-2">
                 <Button
                   variant="secondary"
-                  onClick={() => window.print()}
+                  onClick={handlePrint}
                   disabled={!quotation}
                 >
                   Preview
@@ -150,7 +169,7 @@ export default function QuotationDetailPage() {
                   Download PDF
                 </Button>
               </div>
-              <div>
+              <div ref={contentRef} id="print-area" className="w-[148mm] min-h-[210mm] mx-auto bg-white">
                 <PrintableQuotation quotation={quotation} />
               </div>
               <QuotationGenerator

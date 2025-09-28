@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { notFound } from "next/navigation";
 import PrintableReceipt from "@/components/PrintableReceipt";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Printer, FileDown } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
+import { useReactToPrint } from "react-to-print";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -31,10 +32,24 @@ export default function ReceiptPage() {
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  const handlePrint = () => {
-    window.print();
-  };
+  const handlePrint = useReactToPrint({
+    contentRef,
+    documentTitle: `Receipt-${bill?.jobId || billId}`,
+    pageStyle: `
+      @page {
+        size: A5;
+        margin: 10mm;
+      }
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+        }
+      }
+    `,
+  });
 
   const handleDownloadPDF = async () => {
     const node = document.getElementById("print-area");
@@ -234,34 +249,8 @@ export default function ReceiptPage() {
           </div>
         </header>
 
-        {/* Print-only styles: only render #print-area when printing */}
-        <style jsx global>{`
-          @media print {
-            body * {
-              visibility: hidden;
-            }
-            #print-area,
-            #print-area * {
-              visibility: visible;
-            }
-            #print-area {
-              position: absolute;
-              left: 0;
-              top: 0;
-              width: 100%;
-            }
-          }
-          /* Constrain receipt to A5 dimensions for better PDF capture */
-          #print-area {
-            width: 148mm;
-            min-height: 210mm;
-            margin: 0 auto;
-            background: #fff;
-          }
-        `}</style>
-
         <div className="py-8">
-          <div id="print-area">
+          <div ref={contentRef} id="print-area" className="w-[148mm] min-h-[210mm] mx-auto bg-white">
             <PrintableReceipt billData={bill} task={task} />
           </div>
         </div>
