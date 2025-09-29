@@ -698,7 +698,7 @@ const Dashboard = () => {
                               </p>
                               <p className="text-2xl ipad:text-3xl font-bold text-gray-900">
                                 {todayJobsLoading ? (
-                                  <div className="animate-pulse bg-gray-200 h-8 ipad:h-10 w-16 ipad:w-20 rounded"></div>
+                                  <span className="animate-pulse bg-gray-200 h-8 ipad:h-10 w-16 ipad:w-20 rounded inline-block"></span>
                                 ) : (
                                   todayJobs.length
                                 )}

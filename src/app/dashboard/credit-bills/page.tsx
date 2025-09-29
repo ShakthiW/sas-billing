@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import {
   Card,
@@ -30,6 +30,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
 import { Bill, CreditPayment } from "@/app/types";
 import {
@@ -37,7 +44,17 @@ import {
   recordCreditPayment,
   getCreditPaymentHistory,
 } from "@/app/api/actions";
-import { CreditCard, DollarSign, History, FileText } from "lucide-react";
+import {
+  CreditCard,
+  DollarSign,
+  History,
+  FileText,
+  Search,
+  Filter,
+  SortAsc,
+  SortDesc,
+  X,
+} from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 
 export default function CreditBillsPage() {
@@ -60,9 +77,78 @@ export default function CreditBillsPage() {
     notes: "",
   });
 
+  // Filter and search state
+  const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [sortBy, setSortBy] = useState<string>("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+  const [showFilters, setShowFilters] = useState(false);
+
   useEffect(() => {
     fetchCreditBills();
   }, []);
+
+  // Filter and sort credit bills
+  const filteredAndSortedBills = useMemo(() => {
+    let filtered = creditBills;
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase();
+      filtered = filtered.filter(
+        (bill) =>
+          bill.vehicleNo.toLowerCase().includes(query) ||
+          bill.customerName.toLowerCase().includes(query) ||
+          bill.customerPhone.toLowerCase().includes(query) ||
+          bill.jobId.toLowerCase().includes(query)
+      );
+    }
+
+    // Apply status filter
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((bill) => bill.status === statusFilter);
+    }
+
+    // Apply sorting
+    filtered.sort((a, b) => {
+      let aValue: any;
+      let bValue: any;
+
+      switch (sortBy) {
+        case "vehicleNo":
+          aValue = a.vehicleNo;
+          bValue = b.vehicleNo;
+          break;
+        case "customerName":
+          aValue = a.customerName;
+          bValue = b.customerName;
+          break;
+        case "finalAmount":
+          aValue = a.finalAmount;
+          bValue = b.finalAmount;
+          break;
+        case "remainingBalance":
+          aValue = a.remainingBalance || 0;
+          bValue = b.remainingBalance || 0;
+          break;
+        case "lastPaymentDate":
+          aValue = a.lastPaymentDate || new Date(0);
+          bValue = b.lastPaymentDate || new Date(0);
+          break;
+        case "createdAt":
+        default:
+          aValue = a.createdAt || new Date(0);
+          bValue = b.createdAt || new Date(0);
+          break;
+      }
+
+      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
+      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
+      return 0;
+    });
+
+    return filtered;
+  }, [creditBills, searchQuery, statusFilter, sortBy, sortOrder]);
 
   const fetchCreditBills = async () => {
     try {
@@ -236,6 +322,31 @@ export default function CreditBillsPage() {
     }).format(amount);
   };
 
+  const handleSort = (column: string) => {
+    if (sortBy === column) {
+      setSortOrder(sortOrder === "asc" ? "desc" : "asc");
+    } else {
+      setSortBy(column);
+      setSortOrder("asc");
+    }
+  };
+
+  const clearFilters = () => {
+    setSearchQuery("");
+    setStatusFilter("all");
+    setSortBy("createdAt");
+    setSortOrder("desc");
+  };
+
+  const getSortIcon = (column: string) => {
+    if (sortBy !== column) return null;
+    return sortOrder === "asc" ? (
+      <SortAsc className="w-4 h-4" />
+    ) : (
+      <SortDesc className="w-4 h-4" />
+    );
+  };
+
   if (loading) {
     return (
       <div className="flex h-screen items-center justify-center">
@@ -259,12 +370,13 @@ export default function CreditBillsPage() {
           </div>
           <div className="flex items-center space-x-2">
             <Badge variant="secondary" className="text-sm">
-              {creditBills.length} Credit Bills
+              {filteredAndSortedBills.length} of {creditBills.length} Credit
+              Bills
             </Badge>
             <Badge variant="destructive" className="text-sm">
               Total Outstanding:{" "}
               {formatCurrency(
-                creditBills.reduce(
+                filteredAndSortedBills.reduce(
                   (sum, bill) => sum + (bill.remainingBalance || 0),
                   0
                 )
@@ -272,6 +384,114 @@ export default function CreditBillsPage() {
             </Badge>
           </div>
         </div>
+
+        {/* Search and Filter Controls */}
+        <Card>
+          <CardContent className="pt-6">
+            <div className="flex flex-col space-y-4">
+              {/* Search Bar */}
+              <div className="flex items-center space-x-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4" />
+                  <Input
+                    placeholder="Search by vehicle number, customer name, phone, or job ID..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Button
+                  variant="outline"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="flex items-center space-x-2"
+                >
+                  <Filter className="w-4 h-4" />
+                  <span>Filters</span>
+                </Button>
+                {(searchQuery || statusFilter !== "all") && (
+                  <Button
+                    variant="ghost"
+                    onClick={clearFilters}
+                    className="flex items-center space-x-2"
+                  >
+                    <X className="w-4 h-4" />
+                    <span>Clear</span>
+                  </Button>
+                )}
+              </div>
+
+              {/* Filter Options */}
+              {showFilters && (
+                <div className="flex flex-wrap items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="status-filter">Status:</Label>
+                    <Select
+                      value={statusFilter}
+                      onValueChange={setStatusFilter}
+                    >
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Status</SelectItem>
+                        <SelectItem value="partially_paid">
+                          Partially Paid
+                        </SelectItem>
+                        <SelectItem value="draft">Draft</SelectItem>
+                        <SelectItem value="finalized">Finalized</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <Label htmlFor="sort-by">Sort by:</Label>
+                    <Select value={sortBy} onValueChange={setSortBy}>
+                      <SelectTrigger className="w-40">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="createdAt">Date Created</SelectItem>
+                        <SelectItem value="vehicleNo">
+                          Vehicle Number
+                        </SelectItem>
+                        <SelectItem value="customerName">
+                          Customer Name
+                        </SelectItem>
+                        <SelectItem value="finalAmount">
+                          Total Amount
+                        </SelectItem>
+                        <SelectItem value="remainingBalance">
+                          Remaining Balance
+                        </SelectItem>
+                        <SelectItem value="lastPaymentDate">
+                          Last Payment
+                        </SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      setSortOrder(sortOrder === "asc" ? "desc" : "asc")
+                    }
+                    className="flex items-center space-x-1"
+                  >
+                    {sortOrder === "asc" ? (
+                      <SortAsc className="w-4 h-4" />
+                    ) : (
+                      <SortDesc className="w-4 h-4" />
+                    )}
+                    <span>
+                      {sortOrder === "asc" ? "Ascending" : "Descending"}
+                    </span>
+                  </Button>
+                </div>
+              )}
+            </div>
+          </CardContent>
+        </Card>
 
         {creditBills.length === 0 ? (
           <Card>
@@ -281,6 +501,19 @@ export default function CreditBillsPage() {
               <p className="text-muted-foreground text-center">
                 No credit bills are currently pending payment.
               </p>
+            </CardContent>
+          </Card>
+        ) : filteredAndSortedBills.length === 0 ? (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <Search className="h-12 w-12 text-muted-foreground mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No Results Found</h3>
+              <p className="text-muted-foreground text-center">
+                No credit bills match your current search and filter criteria.
+              </p>
+              <Button variant="outline" onClick={clearFilters} className="mt-4">
+                Clear Filters
+              </Button>
             </CardContent>
           </Card>
         ) : (
@@ -296,17 +529,57 @@ export default function CreditBillsPage() {
                 <Table className="min-w-[1000px]">
                   <TableHeader>
                     <TableRow>
-                      <TableHead>Vehicle No</TableHead>
-                      <TableHead>Customer</TableHead>
-                      <TableHead>Total Amount</TableHead>
-                      <TableHead>Remaining</TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleSort("vehicleNo")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Vehicle No</span>
+                          {getSortIcon("vehicleNo")}
+                        </div>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleSort("customerName")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Customer</span>
+                          {getSortIcon("customerName")}
+                        </div>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleSort("finalAmount")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Total Amount</span>
+                          {getSortIcon("finalAmount")}
+                        </div>
+                      </TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleSort("remainingBalance")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Remaining</span>
+                          {getSortIcon("remainingBalance")}
+                        </div>
+                      </TableHead>
                       <TableHead>Status</TableHead>
-                      <TableHead>Last Payment</TableHead>
+                      <TableHead
+                        className="cursor-pointer hover:bg-muted/50"
+                        onClick={() => handleSort("lastPaymentDate")}
+                      >
+                        <div className="flex items-center space-x-1">
+                          <span>Last Payment</span>
+                          {getSortIcon("lastPaymentDate")}
+                        </div>
+                      </TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {creditBills.map((bill) => (
+                    {filteredAndSortedBills.map((bill) => (
                       <TableRow key={bill._id}>
                         <TableCell className="font-medium">
                           {bill.vehicleNo}
