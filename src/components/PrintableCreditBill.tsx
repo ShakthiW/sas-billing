@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -13,6 +13,7 @@ import { Printer, Download, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Bill } from "@/app/types";
 import PrintableReceipt from "./PrintableReceipt";
+import { useReactToPrint } from "react-to-print";
 
 interface PrintableCreditBillProps {
   bill: Bill;
@@ -25,15 +26,31 @@ export default function PrintableCreditBill({
 }: PrintableCreditBillProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const { toast } = useToast();
+  const contentRef = useRef<HTMLDivElement>(null);
 
-  const handlePrint = () => {
-    window.print();
-    onPrint?.();
-    toast({
-      title: "Success",
-      description: "Credit bill sent to printer",
-    });
-  };
+  const handlePrint = useReactToPrint({
+    contentRef,
+    documentTitle: `CreditBill-${bill.jobId}`,
+    pageStyle: `
+      @page {
+        size: A5;
+        margin: 10mm;
+      }
+      @media print {
+        body {
+          margin: 0;
+          padding: 0;
+        }
+      }
+    `,
+    onAfterPrint: () => {
+      onPrint?.();
+      toast({
+        title: "Success",
+        description: "Credit bill sent to printer",
+      });
+    },
+  });
 
   const formatCurrency = (amount: number) => {
     return `Rs. ${amount.toFixed(2)}`;
@@ -89,10 +106,8 @@ export default function PrintableCreditBill({
               </Button>
             </div>
 
-            <div id="printable-credit-bill" className="p-6 bg-white text-black">
-              <div className="print-content">
-                <PrintableReceipt billData={bill} task={null} />
-              </div>
+            <div ref={contentRef} id="print-area" className="w-[148mm] min-h-[210mm] mx-auto bg-white text-black p-6">
+              <PrintableReceipt billData={bill} task={null} />
             </div>
           </div>
         </DialogContent>
