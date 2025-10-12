@@ -6,10 +6,22 @@ import PrintableReceipt from "@/components/PrintableReceipt";
 import { getBillById, getAllJobs } from "@/app/api/actions";
 import { Bill, Task } from "@/app/types";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Printer, FileDown } from "lucide-react";
+import {
+  ArrowLeft,
+  Printer,
+  FileDown,
+  Upload,
+  CheckCircle,
+  AlertCircle,
+} from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import { useReactToPrint } from "react-to-print";
+import {
+  uploadPDFToFirebase,
+  generatePDFFileName,
+} from "@/lib/firebaseStorage";
+import { toast, Toaster } from "react-hot-toast";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -32,6 +44,8 @@ export default function ReceiptPage() {
   const [task, setTask] = useState<Task | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadedUrl, setUploadedUrl] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
   const handlePrint = useReactToPrint({
@@ -50,6 +64,127 @@ export default function ReceiptPage() {
       }
     `,
   });
+
+  const generatePDFBlob = async (): Promise<Blob | null> => {
+    const node = document.getElementById("print-area");
+    if (!node) return null;
+
+    // Render the receipt area to canvas at high resolution for crisp text
+    const canvas = await html2canvas(node, {
+      scale: 3,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      scrollY: -window.scrollY,
+    });
+
+    // Create A5 PDF (portrait)
+    const pdf = new jsPDF({
+      unit: "mm",
+      format: "a5",
+      orientation: "portrait",
+    });
+    const pageWidthMM = pdf.internal.pageSize.getWidth();
+    const pageHeightMM = pdf.internal.pageSize.getHeight();
+    const marginMM = 4; // small outer margin in PDF
+
+    // Map full canvas width to A5 width, maintain aspect ratio
+    const imgWidthMM = pageWidthMM - marginMM * 2;
+    const imgHeightMM = (canvas.height * imgWidthMM) / canvas.width;
+
+    if (imgHeightMM <= pageHeightMM) {
+      const imgData = canvas.toDataURL("image/png");
+      pdf.addImage(
+        imgData,
+        "PNG",
+        marginMM,
+        marginMM,
+        imgWidthMM,
+        imgHeightMM,
+        undefined,
+        "FAST"
+      );
+    } else {
+      // Slice the tall canvas into A5-height slices without scaling distortion
+      const pxPerMM = canvas.width / imgWidthMM;
+      const pageHeightPx = Math.floor(pageHeightMM * pxPerMM);
+      let renderedHeight = 0;
+      while (renderedHeight < canvas.height) {
+        const sliceHeight = Math.min(
+          pageHeightPx,
+          canvas.height - renderedHeight
+        );
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceHeight;
+        const ctx = pageCanvas.getContext("2d");
+        if (!ctx) break;
+        ctx.drawImage(
+          canvas,
+          0,
+          renderedHeight,
+          canvas.width,
+          sliceHeight,
+          0,
+          0,
+          canvas.width,
+          sliceHeight
+        );
+        const pageImg = pageCanvas.toDataURL("image/png");
+        const sliceHeightMM = sliceHeight / pxPerMM;
+        pdf.addImage(
+          pageImg,
+          "PNG",
+          marginMM,
+          marginMM,
+          imgWidthMM,
+          sliceHeightMM,
+          undefined,
+          "FAST"
+        );
+        renderedHeight += sliceHeight;
+        if (renderedHeight < canvas.height) pdf.addPage("a5", "portrait");
+      }
+    }
+
+    return pdf.output("blob");
+  };
+
+  const handlePrintAndUpload = async () => {
+    if (!bill) return;
+
+    setUploading(true);
+    try {
+      // Generate PDF blob
+      const pdfBlob = await generatePDFBlob();
+      if (!pdfBlob) {
+        toast.error("Failed to generate PDF");
+        return;
+      }
+
+      // Generate filename
+      const fileName = generatePDFFileName(bill.jobId || billId);
+
+      // Upload to Firebase
+      const uploadResult = await uploadPDFToFirebase(
+        pdfBlob,
+        fileName,
+        "receipts"
+      );
+
+      if (uploadResult.success && uploadResult.url) {
+        setUploadedUrl(uploadResult.url);
+        toast.success("PDF uploaded successfully!");
+        console.log("PDF uploaded to:", uploadResult.url);
+      } else {
+        toast.error(`Upload failed: ${uploadResult.error}`);
+      }
+    } catch (error) {
+      console.error("Error in print and upload:", error);
+      toast.error("Failed to upload PDF");
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleDownloadPDF = async () => {
     const node = document.getElementById("print-area");
@@ -239,6 +374,29 @@ export default function ReceiptPage() {
               Print Receipt
             </Button>
             <Button
+              onClick={handlePrintAndUpload}
+              disabled={uploading}
+              className="gap-2"
+              variant="default"
+            >
+              {uploading ? (
+                <>
+                  <Upload className="h-4 w-4 animate-spin" />
+                  Uploading...
+                </>
+              ) : uploadedUrl ? (
+                <>
+                  <CheckCircle className="h-4 w-4 text-green-500" />
+                  Uploaded
+                </>
+              ) : (
+                <>
+                  <Upload className="h-4 w-4" />
+                  Print & Upload PDF
+                </>
+              )}
+            </Button>
+            <Button
               onClick={handleDownloadPDF}
               className="gap-2"
               variant="secondary"
@@ -250,11 +408,40 @@ export default function ReceiptPage() {
         </header>
 
         <div className="py-8">
-          <div ref={contentRef} id="print-area" className="w-[148mm] min-h-[210mm] mx-auto bg-white">
+          {uploadedUrl && (
+            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg mx-auto max-w-2xl">
+              <div className="flex items-center gap-2 text-green-800">
+                <CheckCircle className="h-5 w-5" />
+                <span className="font-medium">PDF Successfully Uploaded!</span>
+              </div>
+              <div className="mt-2 text-sm text-green-700">
+                <p className="mb-2">
+                  Your receipt PDF has been uploaded to Firebase Storage.
+                </p>
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">Download URL:</span>
+                  <a
+                    href={uploadedUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-600 hover:text-blue-800 underline break-all"
+                  >
+                    {uploadedUrl}
+                  </a>
+                </div>
+              </div>
+            </div>
+          )}
+          <div
+            ref={contentRef}
+            id="print-area"
+            className="w-[148mm] min-h-[210mm] mx-auto bg-white"
+          >
             <PrintableReceipt billData={bill} task={task} />
           </div>
         </div>
       </SidebarInset>
+      <Toaster position="top-right" />
     </SidebarProvider>
   );
 }
