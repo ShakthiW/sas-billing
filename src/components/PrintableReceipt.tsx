@@ -76,9 +76,7 @@ const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
         .receipt-container {
           font-size: 11px;
           width: 148mm;
-          max-height: 210mm;
           box-sizing: border-box;
-          overflow: hidden;
         }
         .section-title {
           font-size: 12px;
@@ -108,17 +106,8 @@ const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
           margin-top: 6px;
         }
         @media print {
-          @page {
-            size: A5;
-            margin: 5mm;
-          }
-          body {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
           .receipt-container {
             font-size: 9px;
-            page-break-inside: avoid;
           }
           .section-title {
             font-size: 10px;
@@ -140,10 +129,6 @@ const PrintableReceipt: React.FC<PrintableReceiptProps> = ({
           .address {
             font-size: 8px;
             line-height: 1.1;
-          }
-          .no-break {
-            break-inside: avoid;
-            page-break-inside: avoid;
           }
         }
       `}</style>

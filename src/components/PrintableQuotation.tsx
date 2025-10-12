@@ -13,20 +13,14 @@ const PrintableQuotation: React.FC<PrintableQuotationProps> = ({
       <style jsx global>{`
         .quotation-container {
           font-size: 12px;
+          width: 148mm;
+          box-sizing: border-box;
         }
         .quotation-title {
           font-size: 18px;
           margin-bottom: 6px;
         }
         @media print {
-          @page {
-            size: A5;
-            margin: 8mm;
-          }
-          body {
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
           .quotation-container {
             font-size: 10px;
           }
