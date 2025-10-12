@@ -97,17 +97,103 @@
   .text-sm { font-size: 0.9375rem; }
   .text-base { font-size: 1.0625rem; }
   .text-lg { font-size: 1.25rem; }
-  
+
   /* Better touch targets for iPad */
   button, a, [role="button"] {
     min-height: 44px;
     min-width: 44px;
   }
-  
+
   /* Optimize spacing for iPad layout */
   .container {
     padding-left: 1.5rem;
     padding-right: 1.5rem;
+  }
+}
+
+/* Safari-specific print fixes for iPad compatibility */
+@media print {
+  /* Fix Safari blank page issues */
+  html, body {
+    height: auto !important;
+    overflow: visible !important;
+    min-height: auto !important;
+    position: static !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* Ensure proper page sizing for A5 */
+  @page {
+    size: A5;
+    margin: 10mm;
+  }
+
+  /* Hide non-printable elements */
+  .no-print,
+  button,
+  [role="button"] {
+    display: none !important;
+  }
+
+  header {
+    display: none !important;
+  }
+
+  /* Ensure print area takes full width */
+  #print-area {
+    width: 100% !important;
+    max-width: 148mm !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    position: static !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Fix for Safari page-break issues */
+  .receipt-container,
+  .quotation-container {
+    height: auto !important;
+    max-height: none !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    position: static !important;
+    page-break-after: auto !important;
+    page-break-before: auto !important;
+  }
+
+  /* Better page break support for Safari */
+  .no-break {
+    break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    display: block !important;
+  }
+
+  /* Prevent extra blank pages in Safari */
+  .single-page {
+    page-break-after: avoid !important;
+    break-after: avoid !important;
+  }
+
+  /* Fix image rendering in print */
+  img {
+    max-width: 100% !important;
+    height: auto !important;
+    page-break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
+  }
+
+  /* Ensure tables don't break awkwardly */
+  table {
+    page-break-inside: auto !important;
+  }
+
+  tr {
+    page-break-inside: avoid !important;
+    -webkit-column-break-inside: avoid !important;
   }
 }
 

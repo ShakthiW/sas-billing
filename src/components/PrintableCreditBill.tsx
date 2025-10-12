@@ -32,14 +32,14 @@ export default function PrintableCreditBill({
     contentRef,
     documentTitle: `CreditBill-${bill.jobId}`,
     pageStyle: `
-      @page {
-        size: A5;
-        margin: 10mm;
-      }
       @media print {
-        body {
+        html, body {
+          height: auto !important;
+          overflow: visible !important;
           margin: 0;
           padding: 0;
+          -webkit-print-color-adjust: exact;
+          print-color-adjust: exact;
         }
       }
     `,
