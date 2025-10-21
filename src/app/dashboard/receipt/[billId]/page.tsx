@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Printer, FileDown } from "lucide-react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
-import { useReactToPrint } from "react-to-print";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
@@ -34,22 +33,91 @@ export default function ReceiptPage() {
   const [error, setError] = useState<string | null>(null);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const handlePrint = useReactToPrint({
-    contentRef,
-    documentTitle: `Receipt-${bill?.jobId || billId}`,
-    pageStyle: `
-      @media print {
-        html, body {
-          height: auto !important;
-          overflow: visible !important;
-          margin: 0;
-          padding: 0;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
-        }
+  const handlePrint = async () => {
+    const node = document.getElementById("print-area");
+    if (!node) return;
+
+    // Render the receipt area to canvas at high resolution for crisp text
+    const canvas = await html2canvas(node, {
+      scale: 3,
+      useCORS: true,
+      backgroundColor: "#ffffff",
+      scrollY: -window.scrollY,
+    });
+
+    // Create A5 PDF (portrait)
+    const pdf = new jsPDF({
+      unit: "mm",
+      format: "a5",
+      orientation: "portrait",
+    });
+    const pageWidthMM = pdf.internal.pageSize.getWidth();
+    const pageHeightMM = pdf.internal.pageSize.getHeight();
+    const marginMM = 4; // small outer margin in PDF
+
+    // Map full canvas width to A5 width, maintain aspect ratio
+    const imgWidthMM = pageWidthMM - marginMM * 2;
+    const imgHeightMM = (canvas.height * imgWidthMM) / canvas.width;
+
+    if (imgHeightMM <= pageHeightMM) {
+      const imgData = canvas.toDataURL("image/png");
+      pdf.addImage(
+        imgData,
+        "PNG",
+        marginMM,
+        marginMM,
+        imgWidthMM,
+        imgHeightMM,
+        undefined,
+        "FAST"
+      );
+    } else {
+      // Slice the tall canvas into A5-height slices without scaling distortion
+      const pxPerMM = canvas.width / imgWidthMM;
+      const pageHeightPx = Math.floor(pageHeightMM * pxPerMM);
+      let renderedHeight = 0;
+      while (renderedHeight < canvas.height) {
+        const sliceHeight = Math.min(
+          pageHeightPx,
+          canvas.height - renderedHeight
+        );
+        const pageCanvas = document.createElement("canvas");
+        pageCanvas.width = canvas.width;
+        pageCanvas.height = sliceHeight;
+        const ctx = pageCanvas.getContext("2d");
+        if (!ctx) break;
+        ctx.drawImage(
+          canvas,
+          0,
+          renderedHeight,
+          canvas.width,
+          sliceHeight,
+          0,
+          0,
+          canvas.width,
+          sliceHeight
+        );
+        const pageImg = pageCanvas.toDataURL("image/png");
+        const sliceHeightMM = sliceHeight / pxPerMM;
+        pdf.addImage(
+          pageImg,
+          "PNG",
+          marginMM,
+          marginMM,
+          imgWidthMM,
+          sliceHeightMM,
+          undefined,
+          "FAST"
+        );
+        renderedHeight += sliceHeight;
+        if (renderedHeight < canvas.height) pdf.addPage("a5", "portrait");
       }
-    `,
-  });
+    }
+
+    // Open print dialog for the PDF
+    pdf.autoPrint();
+    window.open(pdf.output('bloburl'), '_blank');
+  };
 
   const handleDownloadPDF = async () => {
     const node = document.getElementById("print-area");

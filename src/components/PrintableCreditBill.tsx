@@ -13,7 +13,8 @@ import { Printer, Download, Eye } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Bill } from "@/app/types";
 import PrintableReceipt from "./PrintableReceipt";
-import { useReactToPrint } from "react-to-print";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 
 interface PrintableCreditBillProps {
   bill: Bill;
@@ -28,29 +29,105 @@ export default function PrintableCreditBill({
   const { toast } = useToast();
   const contentRef = useRef<HTMLDivElement>(null);
 
-  const handlePrint = useReactToPrint({
-    contentRef,
-    documentTitle: `CreditBill-${bill.jobId}`,
-    pageStyle: `
-      @media print {
-        html, body {
-          height: auto !important;
-          overflow: visible !important;
-          margin: 0;
-          padding: 0;
-          -webkit-print-color-adjust: exact;
-          print-color-adjust: exact;
+  const handlePrint = async () => {
+    const node = document.getElementById("print-area");
+    if (!node) return;
+
+    try {
+      // Render the receipt area to canvas at high resolution
+      const canvas = await html2canvas(node, {
+        scale: 3,
+        useCORS: true,
+        backgroundColor: "#ffffff",
+        scrollY: -window.scrollY,
+      });
+
+      // Create A5 PDF (portrait)
+      const pdf = new jsPDF({
+        unit: "mm",
+        format: "a5",
+        orientation: "portrait",
+      });
+      const pageWidthMM = pdf.internal.pageSize.getWidth();
+      const pageHeightMM = pdf.internal.pageSize.getHeight();
+      const marginMM = 4;
+
+      // Map full canvas width to A5 width, maintain aspect ratio
+      const imgWidthMM = pageWidthMM - marginMM * 2;
+      const imgHeightMM = (canvas.height * imgWidthMM) / canvas.width;
+
+      if (imgHeightMM <= pageHeightMM) {
+        const imgData = canvas.toDataURL("image/png");
+        pdf.addImage(
+          imgData,
+          "PNG",
+          marginMM,
+          marginMM,
+          imgWidthMM,
+          imgHeightMM,
+          undefined,
+          "FAST"
+        );
+      } else {
+        // Slice the tall canvas into A5-height slices
+        const pxPerMM = canvas.width / imgWidthMM;
+        const pageHeightPx = Math.floor(pageHeightMM * pxPerMM);
+        let renderedHeight = 0;
+        while (renderedHeight < canvas.height) {
+          const sliceHeight = Math.min(
+            pageHeightPx,
+            canvas.height - renderedHeight
+          );
+          const pageCanvas = document.createElement("canvas");
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sliceHeight;
+          const ctx = pageCanvas.getContext("2d");
+          if (!ctx) break;
+          ctx.drawImage(
+            canvas,
+            0,
+            renderedHeight,
+            canvas.width,
+            sliceHeight,
+            0,
+            0,
+            canvas.width,
+            sliceHeight
+          );
+          const pageImg = pageCanvas.toDataURL("image/png");
+          const sliceHeightMM = sliceHeight / pxPerMM;
+          pdf.addImage(
+            pageImg,
+            "PNG",
+            marginMM,
+            marginMM,
+            imgWidthMM,
+            sliceHeightMM,
+            undefined,
+            "FAST"
+          );
+          renderedHeight += sliceHeight;
+          if (renderedHeight < canvas.height) pdf.addPage("a5", "portrait");
         }
       }
-    `,
-    onAfterPrint: () => {
+
+      // Open print dialog for the PDF
+      pdf.autoPrint();
+      window.open(pdf.output('bloburl'), '_blank');
+
       onPrint?.();
       toast({
         title: "Success",
         description: "Credit bill sent to printer",
       });
-    },
-  });
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to print credit bill",
+        variant: "destructive",
+      });
+    }
+  };
 
   const formatCurrency = (amount: number) => {
     return `Rs. ${amount.toFixed(2)}`;
