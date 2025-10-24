@@ -465,7 +465,7 @@ export default function PaymentsPage() {
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Payment Records ({filteredBills.length})</CardTitle>
+                <CardTitle>Credit Payment Records ({filteredBills.length})</CardTitle>
                 <CardDescription>
                   Detailed view of all credit bills and payment status
                 </CardDescription>
