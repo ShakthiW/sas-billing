@@ -77,7 +77,7 @@ export async function POST(request: NextRequest) {
     }
 
     const brandId = uuidv4();
-    const newBrand: PartBrand = {
+    const newBrand: Omit<PartBrand, '_id'> = {
       brandId,
       name: name.trim(),
       description: description?.trim() || "",
@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date(),
     };
 
-    await db.collection("customBrands").insertOne(newBrand);
+    await db.collection("customBrands").insertOne(newBrand as any);
 
     return NextResponse.json(newBrand, { status: 201 });
   } catch (error) {
