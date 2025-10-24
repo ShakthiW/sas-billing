@@ -817,6 +817,8 @@ export default function TaskUpdateModal({
                 <Button
                   type="button"
                   variant="outline"
+                  size="lg"
+                  className="h-14"
                   onClick={() => {
                     setSubtaskMenuStep("services");
                     if (services.length === 0) fetchServices();
@@ -827,6 +829,8 @@ export default function TaskUpdateModal({
                 <Button
                   type="button"
                   variant="outline"
+                  size="lg"
+                  className="h-14"
                   onClick={() => {
                     setSubtaskMenuStep("parts");
                     if (parts.length === 0) fetchParts();
