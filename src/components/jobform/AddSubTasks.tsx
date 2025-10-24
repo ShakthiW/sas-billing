@@ -477,7 +477,6 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                 }}
               >
                 <div className="flex flex-col items-center">
-                  <span className="text-3xl mb-2">🔧</span>
                   <span className="text-lg font-medium">Service</span>
                 </div>
               </Button>
@@ -492,7 +491,6 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                 }}
               >
                 <div className="flex flex-col items-center">
-                  <span className="text-3xl mb-2">⚙️</span>
                   <span className="text-lg font-medium">Add Part</span>
                 </div>
               </Button>
@@ -560,7 +558,6 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                         onClick={() => handleSelectService(service)}
                       >
                         <div className="flex flex-col items-center text-center">
-                          <span className="text-lg mb-1">🔧</span>
                           <span className="truncate w-full">
                             {service.name}
                           </span>
@@ -610,7 +607,6 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                         onClick={() => handleSelectPartType(part)}
                       >
                         <div className="flex flex-col items-center text-center">
-                          <span className="text-lg mb-1">⚙️</span>
                           <span className="truncate w-full">{part.name}</span>
                         </div>
                       </Button>
@@ -658,7 +654,6 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                         onClick={() => handleSelectBrand(brand.name)}
                       >
                         <div className="flex flex-col items-center text-center">
-                          <span className="text-lg mb-1">🏷️</span>
                           <span className="truncate w-full">{brand.name}</span>
                         </div>
                       </Button>
