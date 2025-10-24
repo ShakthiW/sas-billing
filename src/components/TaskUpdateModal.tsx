@@ -40,6 +40,7 @@ import { jobsQueryKey } from "@/hooks/useJobs";
 import { Loader2, Plus, Search } from "lucide-react";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { BrandCombobox } from "@/components/BrandCombobox";
+import { PartBrand } from "@/types/services-parts";
 
 // Firebase app and storage are initialized in src/lib/firebaseClient
 
@@ -94,7 +95,7 @@ export default function TaskUpdateModal({
   // Dynamic data from database
   const [services, setServices] = useState<any[]>([]);
   const [parts, setParts] = useState<any[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
+  const [brands, setBrands] = useState<PartBrand[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Search states
@@ -552,7 +553,7 @@ export default function TaskUpdateModal({
 
   // Filter brands based on search
   const filteredBrands = brands.filter((brand) =>
-    brand.toLowerCase().includes(brandSearch.toLowerCase())
+    brand.name.toLowerCase().includes(brandSearch.toLowerCase())
   );
 
   return (
@@ -963,12 +964,12 @@ export default function TaskUpdateModal({
                     <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
                       {filteredBrands.map((brand) => (
                         <Button
-                          key={brand}
+                          key={brand.brandId}
                           type="button"
                           variant="outline"
-                          onClick={() => handleSelectBrand(brand)}
+                          onClick={() => handleSelectBrand(brand.name)}
                         >
-                          {brand}
+                          {brand.name}
                         </Button>
                       ))}
                     </div>
@@ -1067,11 +1068,11 @@ export default function TaskUpdateModal({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="partBrand">Brand *</Label>
+                    <Label htmlFor="partBrand">Condition *</Label>
                     <BrandCombobox
                       value={newPartBrand}
                       onValueChange={setNewPartBrand}
-                      placeholder="Select or create brand..."
+                      placeholder="Select or create condition..."
                     />
                   </div>
                 </div>

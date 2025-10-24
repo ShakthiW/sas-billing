@@ -57,7 +57,7 @@ export async function POST(request: NextRequest) {
 
     if (!name || !name.trim()) {
       return NextResponse.json(
-        { error: "Brand name is required" },
+        { error: "Condition name is required" },
         { status: 400 }
       );
     }
@@ -71,7 +71,7 @@ export async function POST(request: NextRequest) {
 
     if (existingBrand) {
       return NextResponse.json(
-        { error: "Brand with this name already exists" },
+        { error: "Condition with this name already exists" },
         { status: 400 }
       );
     }
@@ -110,7 +110,7 @@ export async function PUT(request: NextRequest) {
 
     if (!brandId || !name || !name.trim()) {
       return NextResponse.json(
-        { error: "Brand ID and name are required" },
+        { error: "Condition ID and name are required" },
         { status: 400 }
       );
     }
@@ -124,7 +124,7 @@ export async function PUT(request: NextRequest) {
 
     if (!existingBrand) {
       return NextResponse.json(
-        { error: "Brand not found" },
+        { error: "Condition not found" },
         { status: 404 }
       );
     }
@@ -139,7 +139,7 @@ export async function PUT(request: NextRequest) {
 
     if (duplicateBrand) {
       return NextResponse.json(
-        { error: "Brand with this name already exists" },
+        { error: "Condition with this name already exists" },
         { status: 400 }
       );
     }
@@ -182,7 +182,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!brandId) {
       return NextResponse.json(
-        { error: "Brand ID is required" },
+        { error: "Condition ID is required" },
         { status: 400 }
       );
     }
@@ -196,7 +196,7 @@ export async function DELETE(request: NextRequest) {
 
     if (!existingBrand) {
       return NextResponse.json(
-        { error: "Brand not found" },
+        { error: "Condition not found" },
         { status: 404 }
       );
     }
@@ -212,7 +212,7 @@ export async function DELETE(request: NextRequest) {
     if (partsUsingBrand > 0) {
       return NextResponse.json(
         {
-          error: `Cannot delete brand. It is used by ${partsUsingBrand} active part(s). Please deactivate or update the parts first.`
+          error: `Cannot delete condition. It is used by ${partsUsingBrand} active part(s). Please deactivate or update the parts first.`
         },
         { status: 400 }
       );
@@ -220,11 +220,11 @@ export async function DELETE(request: NextRequest) {
 
     await db.collection("customBrands").deleteOne({ brandId });
 
-    return NextResponse.json({ message: "Brand deleted successfully" });
+    return NextResponse.json({ message: "Condition deleted successfully" });
   } catch (error) {
     console.error("Failed to delete brand:", error);
     return NextResponse.json(
-      { error: "Failed to delete brand" },
+      { error: "Failed to delete condition" },
       { status: 500 }
     );
   }

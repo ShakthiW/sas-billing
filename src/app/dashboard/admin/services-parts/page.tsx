@@ -346,7 +346,7 @@ export default function ServicesPartsManagement() {
   // Handle brand form submit
   const handleBrandSubmit = async () => {
     if (!brandFormData.name.trim()) {
-      toast.error("Brand name is required");
+      toast.error("Condition name is required");
       return;
     }
 
@@ -365,18 +365,18 @@ export default function ServicesPartsManagement() {
 
       if (response.ok) {
         toast.success(
-          selectedBrand ? "Brand updated successfully" : "Brand created successfully"
+          selectedBrand ? "Condition updated successfully" : "Condition created successfully"
         );
         setBrandDialogOpen(false);
         resetBrandForm();
         fetchBrands();
       } else {
         const error = await response.json();
-        toast.error(error.error || "Failed to save brand");
+        toast.error(error.error || "Failed to save condition");
       }
     } catch (error) {
-      console.error("Failed to save brand:", error);
-      toast.error("Failed to save brand");
+      console.error("Failed to save condition:", error);
+      toast.error("Failed to save condition");
     } finally {
       setLoading(false);
     }
@@ -384,7 +384,7 @@ export default function ServicesPartsManagement() {
 
   // Delete brand
   const handleDeleteBrand = async (brandId: string) => {
-    if (!confirm("Are you sure you want to delete this brand?")) return;
+    if (!confirm("Are you sure you want to delete this condition?")) return;
 
     try {
       setLoading(true);
@@ -393,15 +393,15 @@ export default function ServicesPartsManagement() {
       });
 
       if (response.ok) {
-        toast.success("Brand deleted successfully");
+        toast.success("Condition deleted successfully");
         fetchBrands();
       } else {
         const error = await response.json();
-        toast.error(error.error || "Failed to delete brand");
+        toast.error(error.error || "Failed to delete condition");
       }
     } catch (error) {
-      console.error("Failed to delete brand:", error);
-      toast.error("Failed to delete brand");
+      console.error("Failed to delete condition:", error);
+      toast.error("Failed to delete condition");
     } finally {
       setLoading(false);
     }
@@ -527,7 +527,7 @@ export default function ServicesPartsManagement() {
                 </TabsTrigger>
                 <TabsTrigger value="brands" className="flex items-center gap-2">
                   <Search className="h-4 w-4" />
-                  Brands
+                  Conditions
                 </TabsTrigger>
               </TabsList>
 
@@ -760,9 +760,9 @@ export default function ServicesPartsManagement() {
                   <CardHeader>
                     <div className="flex justify-between items-center">
                       <div>
-                        <CardTitle>Brands</CardTitle>
+                        <CardTitle>Conditions</CardTitle>
                         <CardDescription>
-                          Manage part brands and manufacturers
+                          Manage part conditions and manufacturers
                         </CardDescription>
                       </div>
                       <Button
@@ -772,7 +772,7 @@ export default function ServicesPartsManagement() {
                         }}
                       >
                         <Plus className="mr-2 h-4 w-4" />
-                        Add Brand
+                        Add Condition
                       </Button>
                     </div>
                   </CardHeader>
@@ -781,7 +781,7 @@ export default function ServicesPartsManagement() {
                       <div className="relative">
                         <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
-                          placeholder="Search brands..."
+                          placeholder="Search conditions..."
                           value={brandSearch}
                           onChange={(e) => setBrandSearch(e.target.value)}
                           className="pl-8"
@@ -985,13 +985,13 @@ export default function ServicesPartsManagement() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="part-brand">Brand *</Label>
+                  <Label htmlFor="part-brand">Condition *</Label>
                   <BrandCombobox
                     value={partFormData.brand}
                     onValueChange={(value) =>
                       setPartFormData({ ...partFormData, brand: value })
                     }
-                    placeholder="Select or create brand..."
+                    placeholder="Select or create condition..."
                   />
                 </div>
               </div>
@@ -1113,12 +1113,12 @@ export default function ServicesPartsManagement() {
           <DialogContent>
             <DialogHeader>
               <DialogTitle>
-                {selectedBrand ? "Edit Brand" : "Add New Brand"}
+                {selectedBrand ? "Edit Condition" : "Add New Condition"}
               </DialogTitle>
               <DialogDescription>
                 {selectedBrand
-                  ? "Update the brand details below"
-                  : "Enter the details for the new brand"}
+                  ? "Update the condition details below"
+                  : "Enter the details for the new condition"}
               </DialogDescription>
             </DialogHeader>
             <div className="space-y-4">
@@ -1130,7 +1130,7 @@ export default function ServicesPartsManagement() {
                   onChange={(e) =>
                     setBrandFormData({ ...brandFormData, name: e.target.value })
                   }
-                  placeholder="e.g., Bosch"
+                  placeholder="e.g., New, Used, Refurbished"
                 />
               </div>
               <div className="space-y-2">
@@ -1144,7 +1144,7 @@ export default function ServicesPartsManagement() {
                       description: e.target.value,
                     })
                   }
-                  placeholder="Brief description of the brand"
+                  placeholder="Brief description of the condition"
                 />
               </div>
             </div>
@@ -1159,9 +1159,9 @@ export default function ServicesPartsManagement() {
                     Saving...
                   </>
                 ) : selectedBrand ? (
-                  "Update Brand"
+                  "Update Condition"
                 ) : (
-                  "Add Brand"
+                  "Add Condition"
                 )}
               </Button>
             </DialogFooter>

@@ -33,6 +33,25 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
+        <head>
+          <script
+            dangerouslySetInnerHTML={{
+              __html: `
+                // Suppress hydration warnings for browser extensions
+                const originalError = console.error;
+                console.error = (...args) => {
+                  if (
+                    typeof args[0] === 'string' &&
+                    args[0].includes('A tree hydrated but some attributes of the server rendered HTML didn\'t match')
+                  ) {
+                    return;
+                  }
+                  originalError.apply(console, args);
+                };
+              `,
+            }}
+          />
+        </head>
         <body
           className={`${geistSans.variable} ${geistMono.variable} antialiased`}
         >
