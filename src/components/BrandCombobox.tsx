@@ -42,7 +42,7 @@ interface BrandComboboxProps {
 export function BrandCombobox({
     value,
     onValueChange,
-    placeholder = "Select brand...",
+    placeholder = "Select condition...",
     className,
     disabled = false,
 }: BrandComboboxProps) {
@@ -90,7 +90,7 @@ export function BrandCombobox({
     // Handle creating new brand
     const handleCreateBrand = async () => {
         if (!newBrandName.trim()) {
-            toast.error("Brand name is required");
+            toast.error("Condition name is required");
             return;
         }
 
@@ -112,14 +112,14 @@ export function BrandCombobox({
                 setShowCreateDialog(false);
                 setNewBrandName("");
                 setNewBrandDescription("");
-                toast.success("Brand created successfully");
+                toast.success("Condition created successfully");
             } else {
                 const error = await response.json();
-                toast.error(error.error || "Failed to create brand");
+                toast.error(error.error || "Failed to create condition");
             }
         } catch (error) {
-            console.error("Failed to create brand:", error);
-            toast.error("Failed to create brand");
+            console.error("Failed to create condition:", error);
+            toast.error("Failed to create condition");
         } finally {
             setLoading(false);
         }
@@ -145,14 +145,14 @@ export function BrandCombobox({
                 <PopoverContent className="w-full p-0" align="start">
                     <Command>
                         <CommandInput
-                            placeholder="Search brands..."
+                            placeholder="Search conditions..."
                             value={searchValue}
                             onValueChange={setSearchValue}
                         />
                         <CommandList>
                             <CommandEmpty>
                                 <div className="py-6 text-center text-sm">
-                                    <p className="mb-2">No brands found.</p>
+                                    <p className="mb-2">No conditions found.</p>
                                     <Button
                                         variant="outline"
                                         size="sm"
@@ -160,7 +160,7 @@ export function BrandCombobox({
                                         className="h-8"
                                     >
                                         <Plus className="mr-2 h-4 w-4" />
-                                        Create new brand
+                                        Create new condition
                                     </Button>
                                 </div>
                             </CommandEmpty>
@@ -195,7 +195,7 @@ export function BrandCombobox({
                                     className="text-primary"
                                 >
                                     <Plus className="mr-2 h-4 w-4" />
-                                    Create new brand
+                                    Create new condition
                                 </CommandItem>
                             </CommandGroup>
                         </CommandList>
@@ -207,19 +207,19 @@ export function BrandCombobox({
             <Dialog open={showCreateDialog} onOpenChange={setShowCreateDialog}>
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Create New Brand</DialogTitle>
+                        <DialogTitle>Create New Condition</DialogTitle>
                         <DialogDescription>
-                            Add a new brand to the system. This brand will be available for all parts.
+                            Add a new condition to the system. This condition will be available for all parts.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="brand-name">Brand Name *</Label>
+                            <Label htmlFor="brand-name">Condition Name *</Label>
                             <Input
                                 id="brand-name"
                                 value={newBrandName}
                                 onChange={(e) => setNewBrandName(e.target.value)}
-                                placeholder="e.g., Bosch, Denso"
+                                placeholder="e.g., New, Used, Refurbished"
                             />
                         </div>
                         <div className="space-y-2">
@@ -228,7 +228,7 @@ export function BrandCombobox({
                                 id="brand-description"
                                 value={newBrandDescription}
                                 onChange={(e) => setNewBrandDescription(e.target.value)}
-                                placeholder="Optional description of the brand"
+                                placeholder="Optional description of the condition"
                                 rows={3}
                             />
                         </div>
@@ -244,7 +244,7 @@ export function BrandCombobox({
                             onClick={handleCreateBrand}
                             disabled={loading || !newBrandName.trim()}
                         >
-                            {loading ? "Creating..." : "Create Brand"}
+                            {loading ? "Creating..." : "Create Condition"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

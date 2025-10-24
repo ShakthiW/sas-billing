@@ -16,6 +16,7 @@ import { v4 as uuidv4 } from "uuid";
 import { Loader2, Plus, Search } from "lucide-react";
 import { toast } from "react-hot-toast";
 import { BrandCombobox } from "@/components/BrandCombobox";
+import { PartBrand } from "@/types/services-parts";
 
 interface SubTasksProps {
   setSubTasks: (subtasks: SubTask[]) => void;
@@ -35,7 +36,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
   // Dynamic data from database
   const [services, setServices] = useState<any[]>([]);
   const [parts, setParts] = useState<any[]>([]);
-  const [brands, setBrands] = useState<string[]>([]);
+  const [brands, setBrands] = useState<PartBrand[]>([]);
   const [loading, setLoading] = useState(false);
 
   // Search states
@@ -391,7 +392,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
 
   // Filter brands based on search
   const filteredBrands = brands.filter((brand) =>
-    brand.toLowerCase().includes(brandSearch.toLowerCase())
+    brand.name.toLowerCase().includes(brandSearch.toLowerCase())
   );
 
   return (
@@ -645,16 +646,16 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
                     {filteredBrands.map((brand) => (
                       <Button
-                        key={brand}
+                        key={brand.brandId}
                         type="button"
                         variant="outline"
                         size="lg"
                         className="h-16 p-4"
-                        onClick={() => handleSelectBrand(brand)}
+                        onClick={() => handleSelectBrand(brand.name)}
                       >
                         <div className="flex flex-col items-center text-center">
                           <span className="text-lg mb-1">🏷️</span>
-                          <span className="truncate w-full">{brand}</span>
+                          <span className="truncate w-full">{brand.name}</span>
                         </div>
                       </Button>
                     ))}
@@ -772,12 +773,12 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                 </div>
                 <div className="space-y-3">
                   <Label htmlFor="partBrand" className="">
-                    Brand *
+                    Condition *
                   </Label>
                   <BrandCombobox
                     value={newPartBrand}
                     onValueChange={setNewPartBrand}
-                    placeholder="Select or create brand..."
+                    placeholder="Select or create condition..."
                     className="h-12"
                   />
                 </div>
