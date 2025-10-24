@@ -15,6 +15,7 @@ import { SubTask } from "@/app/types";
 import { v4 as uuidv4 } from "uuid";
 import { Loader2, Plus, Search } from "lucide-react";
 import { toast } from "react-hot-toast";
+import { BrandCombobox } from "@/components/BrandCombobox";
 
 interface SubTasksProps {
   setSubTasks: (subtasks: SubTask[]) => void;
@@ -410,9 +411,8 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
               />
               <Label
                 htmlFor={`confirmed-subtask-${task.subtaskID}`}
-                className={`text-sm flex-grow ${
-                  task.isCompleted ? "line-through text-gray-500" : ""
-                }`}
+                className={`text-sm flex-grow ${task.isCompleted ? "line-through text-gray-500" : ""
+                  }`}
               >
                 {task.taskType === "service"
                   ? `Service: ${task.serviceType}`
@@ -449,16 +449,16 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
               {menuStep === "main"
                 ? "Select Task Type"
                 : menuStep === "services"
-                ? "Select Service"
-                : menuStep === "parts"
-                ? "Select Part"
-                : menuStep === "brands"
-                ? "Select Brand"
-                : menuStep === "addService"
-                ? "Add New Service"
-                : menuStep === "addPart"
-                ? "Add New Part"
-                : ""}
+                  ? "Select Service"
+                  : menuStep === "parts"
+                    ? "Select Part"
+                    : menuStep === "brands"
+                      ? "Select Brand"
+                      : menuStep === "addService"
+                        ? "Add New Service"
+                        : menuStep === "addPart"
+                          ? "Add New Part"
+                          : ""}
             </DialogTitle>
           </DialogHeader>
 
@@ -778,11 +778,10 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                   <Label htmlFor="partBrand" className="">
                     Brand *
                   </Label>
-                  <Input
-                    id="partBrand"
-                    placeholder="e.g., Bosch, Denso"
+                  <BrandCombobox
                     value={newPartBrand}
-                    onChange={(e) => setNewPartBrand(e.target.value)}
+                    onValueChange={setNewPartBrand}
+                    placeholder="Select or create brand..."
                     className="h-12"
                   />
                 </div>
