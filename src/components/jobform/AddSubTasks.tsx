@@ -454,7 +454,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                   : menuStep === "parts"
                     ? "Select Part"
                     : menuStep === "brands"
-                      ? "Select Brand"
+                      ? "Select Condition"
                       : menuStep === "addService"
                         ? "Add New Service"
                         : menuStep === "addPart"
@@ -631,7 +631,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
-                  placeholder="Search brands..."
+                  placeholder="Search Conditions..."
                   value={brandSearch}
                   onChange={(e) => setBrandSearch(e.target.value)}
                   className="pl-8 h-12"
