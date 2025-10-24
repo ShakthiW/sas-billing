@@ -554,7 +554,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                         type="button"
                         variant="outline"
                         size="lg"
-                        className="h-16 p-4"
+                        className="h-20 p-4"
                         onClick={() => handleSelectService(service)}
                       >
                         <div className="flex flex-col items-center text-center">
@@ -603,7 +603,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                         type="button"
                         variant="outline"
                         size="lg"
-                        className="h-16 p-4"
+                        className="h-20 p-4"
                         onClick={() => handleSelectPartType(part)}
                       >
                         <div className="flex flex-col items-center text-center">
@@ -650,7 +650,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                         type="button"
                         variant="outline"
                         size="lg"
-                        className="h-16 p-4"
+                        className="h-20 p-4"
                         onClick={() => handleSelectBrand(brand.name)}
                       >
                         <div className="flex flex-col items-center text-center">
