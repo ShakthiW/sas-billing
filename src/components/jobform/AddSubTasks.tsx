@@ -654,7 +654,6 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                         onClick={() => handleSelectBrand(brand.name)}
                       >
                         <div className="flex flex-col items-center text-center">
-                          <span className="text-lg mb-1">🏷️</span>
                           <span className="truncate w-full">{brand.name}</span>
                         </div>
                       </Button>
