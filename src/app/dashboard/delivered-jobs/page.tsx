@@ -9,13 +9,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getAllJobs, getBillById } from "@/app/api/actions";
+import { getAllJobs } from "@/app/api/actions";
 import { Task } from "@/app/types";
 import Image from "@/components/RemoteImage";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DashboardLayout } from "@/components/DashboardLayout";
-import { Trash2, Receipt } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import LazyPrintableCreditBill from "@/components/LazyPrintableCreditBill";
 import { toast } from "react-hot-toast";
 import { deleteJob } from "@/app/api/actions";
 import { useAdminPasswordPrompt } from "@/components/admin-password-prompt";
@@ -29,7 +30,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Search } from "lucide-react";
-import { useRouter } from "next/navigation";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -62,7 +62,6 @@ const DeliveredJobsList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<"updated" | "created">("updated");
   const [sortOrder, setSortOrder] = useState<"desc" | "asc">("desc");
-  const router = useRouter();
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [jobPendingDelete, setJobPendingDelete] = useState<Task | null>(null);
 
@@ -90,11 +89,13 @@ const DeliveredJobsList = () => {
 
   const { promptForPassword, AdminPasswordPromptComponent } =
     useAdminPasswordPrompt();
+
+
   const handleDelete = async (taskId: string, title: string) => {
     promptForPassword(
       ADMIN_PASSWORD_ACTIONS.DELETE_JOB,
       `Delete job "${title}"`,
-      () => {},
+      () => { },
       {
         targetId: taskId,
         targetType: "job",
@@ -127,20 +128,6 @@ const DeliveredJobsList = () => {
     );
   };
 
-  const handleViewReceipt = async (jobId: string) => {
-    try {
-      const bill = await getBillById(jobId);
-      if (bill) {
-        // Navigate using jobId since getBillById can find bills by both billId and jobId
-        router.push(`/dashboard/receipt/${jobId}`);
-      } else {
-        toast.error("No receipt found for this job");
-      }
-    } catch (error) {
-      console.error("Failed to fetch receipt:", error);
-      toast.error("Failed to fetch receipt");
-    }
-  };
 
   const filteredJobs = allJobs
     .filter((job) =>
@@ -149,17 +136,17 @@ const DeliveredJobsList = () => {
     .sort((a, b) => {
       const aTime = (sortBy === "updated" ? a.updatedAt : a.createdAt)
         ? new Date(
-            (sortBy === "updated"
-              ? (a as any).updatedAt
-              : (a as any).createdAt) as any
-          ).getTime()
+          (sortBy === "updated"
+            ? (a as any).updatedAt
+            : (a as any).createdAt) as any
+        ).getTime()
         : 0;
       const bTime = (sortBy === "updated" ? b.updatedAt : b.createdAt)
         ? new Date(
-            (sortBy === "updated"
-              ? (b as any).updatedAt
-              : (b as any).createdAt) as any
-          ).getTime()
+          (sortBy === "updated"
+            ? (b as any).updatedAt
+            : (b as any).createdAt) as any
+        ).getTime()
         : 0;
       return sortOrder === "desc" ? bTime - aTime : aTime - bTime;
     });
@@ -234,7 +221,7 @@ const DeliveredJobsList = () => {
                 <TableHead>Vehicle No</TableHead>
                 <TableHead>Progress</TableHead>
                 <TableHead className="text-right">Status</TableHead>
-                <TableHead className="w-[120px] text-center">Actions</TableHead>
+                <TableHead className="w-[120px] text-center">Receipt</TableHead>
                 <TableHead className="w-[100px] text-center">Delete</TableHead>
               </TableRow>
             </TableHeader>
@@ -297,15 +284,7 @@ const DeliveredJobsList = () => {
                       </span>
                     </TableCell>
                     <TableCell className="text-center">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="gap-2 text-blue-600 border-blue-600 hover:bg-blue-50"
-                        onClick={() => handleViewReceipt(job.id)}
-                      >
-                        <Receipt className="h-4 w-4" />
-                        View Receipt
-                      </Button>
+                      <LazyPrintableCreditBill jobId={job.id} />
                     </TableCell>
                     <TableCell className="text-center">
                       <Button

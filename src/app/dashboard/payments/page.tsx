@@ -40,6 +40,7 @@ import {
 } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
 import PrintableCreditBill from "@/components/PrintableCreditBill";
+import PrintableCreditPayment from "@/components/PrintableCreditPayment";
 import PrintableReceipt from "@/components/PrintableReceipt";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
@@ -465,7 +466,7 @@ export default function PaymentsPage() {
           ) : (
             <Card>
               <CardHeader>
-                <CardTitle>Payment Records ({filteredBills.length})</CardTitle>
+                <CardTitle>Credit Payment Records ({filteredBills.length})</CardTitle>
                 <CardDescription>
                   Detailed view of all credit bills and payment status
                 </CardDescription>
@@ -623,16 +624,7 @@ export default function PaymentsPage() {
                             {p.notes || "-"}
                           </TableCell>
                           <TableCell>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => {
-                                // Use jobId to always show the latest updated receipt
-                                window.location.href = `/dashboard/receipt/${p.jobId}`;
-                              }}
-                            >
-                              View
-                            </Button>
+                            <PrintableCreditPayment payment={p} />
                           </TableCell>
                         </TableRow>
                       ))}

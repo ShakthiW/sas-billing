@@ -141,10 +141,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 title: "History",
                 url: "#",
                 items: [
-                    {
-                        title: "Delivered Job List",
-                        url: "/dashboard/delivered-jobs",
-                    },
+                    // {
+                    //     title: "Delivered Job List",
+                    //     url: "/dashboard/delivered-jobs",
+                    // },
                     {
                         title: "Invoices",
                         url: "#",

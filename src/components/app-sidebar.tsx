@@ -167,11 +167,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         url: "#",
         icon: History,
         items: [
-          {
-            title: "Delivered Job List",
-            url: "/dashboard/delivered-jobs",
-            icon: Truck,
-          },
+          // {
+          //   title: "Delivered Job List",
+          //   url: "/dashboard/delivered-jobs",
+          //   icon: Truck,
+          // },
           {
             title: "Invoices",
             url: "/dashboard/invoices",

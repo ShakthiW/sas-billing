@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState, useMemo } from "react";
-import { useRouter } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -48,7 +47,6 @@ import {
   CreditCard,
   DollarSign,
   History,
-  FileText,
   Search,
   Filter,
   SortAsc,
@@ -56,9 +54,9 @@ import {
   X,
 } from "lucide-react";
 import { DashboardLayout } from "@/components/DashboardLayout";
+import PrintableCreditBill from "@/components/PrintableCreditBill";
 
 export default function CreditBillsPage() {
-  const router = useRouter();
   const [creditBills, setCreditBills] = useState<Bill[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBill, setSelectedBill] = useState<Bill | null>(null);
@@ -611,15 +609,7 @@ export default function CreditBillsPage() {
                         </TableCell>
                         <TableCell className="text-right">
                           <div className="flex items-center justify-end space-x-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() =>
-                                router.push(`/dashboard/receipt/${bill.jobId}`)
-                              }
-                            >
-                              <FileText className="w-4 h-4" />
-                            </Button>
+                            <PrintableCreditBill bill={bill} />
                             <Button
                               variant="outline"
                               size="sm"

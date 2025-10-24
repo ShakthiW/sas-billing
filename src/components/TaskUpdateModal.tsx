@@ -39,6 +39,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { jobsQueryKey } from "@/hooks/useJobs";
 import { Loader2, Plus, Search } from "lucide-react";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
+import { BrandCombobox } from "@/components/BrandCombobox";
 
 // Firebase app and storage are initialized in src/lib/firebaseClient
 
@@ -449,9 +450,8 @@ export default function TaskUpdateModal({
 
       // Upload image if changed
       if (localImageFile) {
-        const uniqueFileName = `tasks/${crypto.randomUUID()}-${
-          localImageFile.name
-        }`;
+        const uniqueFileName = `tasks/${crypto.randomUUID()}-${localImageFile.name
+          }`;
         const storageRef = ref(storage, uniqueFileName);
         const uploadTask = uploadBytesResumable(storageRef, localImageFile);
 
@@ -482,9 +482,8 @@ export default function TaskUpdateModal({
       // Upload remarks images if any
       if (remarksImages.length > 0) {
         for (const file of remarksImages) {
-          const uniqueFileName = `damage_photos/${crypto.randomUUID()}-${
-            file.name
-          }`;
+          const uniqueFileName = `damage_photos/${crypto.randomUUID()}-${file.name
+            }`;
           const storageRef = ref(storage, uniqueFileName);
           const uploadTaskSnapshot = await uploadBytesResumable(
             storageRef,
@@ -798,16 +797,16 @@ export default function TaskUpdateModal({
                 {subtaskMenuStep === "main"
                   ? "Select Task Type"
                   : subtaskMenuStep === "services"
-                  ? "Select Service"
-                  : subtaskMenuStep === "parts"
-                  ? "Select Part"
-                  : subtaskMenuStep === "brands"
-                  ? "Select Brand"
-                  : subtaskMenuStep === "addService"
-                  ? "Add New Service"
-                  : subtaskMenuStep === "addPart"
-                  ? "Add New Part"
-                  : ""}
+                    ? "Select Service"
+                    : subtaskMenuStep === "parts"
+                      ? "Select Part"
+                      : subtaskMenuStep === "brands"
+                        ? "Select Brand"
+                        : subtaskMenuStep === "addService"
+                          ? "Add New Service"
+                          : subtaskMenuStep === "addPart"
+                            ? "Add New Part"
+                            : ""}
               </DialogTitle>
             </DialogHeader>
 
@@ -1073,11 +1072,10 @@ export default function TaskUpdateModal({
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="partBrand">Brand *</Label>
-                    <Input
-                      id="partBrand"
-                      placeholder="e.g., Bosch, Denso"
+                    <BrandCombobox
                       value={newPartBrand}
-                      onChange={(e) => setNewPartBrand(e.target.value)}
+                      onValueChange={setNewPartBrand}
+                      placeholder="Select or create brand..."
                     />
                   </div>
                 </div>

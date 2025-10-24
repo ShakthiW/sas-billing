@@ -39,7 +39,8 @@ import {
   Package,
   Wrench,
 } from "lucide-react";
-import { CustomService, CustomPart } from "@/types/services-parts";
+import { CustomService, CustomPart, PartBrand } from "@/types/services-parts";
+import { BrandCombobox } from "@/components/BrandCombobox";
 import { useUserPermissions } from "@/hooks/useUserPermissions";
 import { AppSidebar } from "@/components/app-sidebar";
 import {
@@ -59,7 +60,7 @@ import {
 
 export default function ServicesPartsManagement() {
   const { permissions, role, loading: permissionsLoading } = useUserPermissions();
-  
+
   // Services state
   const [services, setServices] = useState<CustomService[]>([]);
   const [serviceSearch, setServiceSearch] = useState("");
@@ -72,7 +73,7 @@ export default function ServicesPartsManagement() {
     estimatedDuration: "",
     defaultPrice: "",
   });
-  
+
   // Parts state
   const [parts, setParts] = useState<CustomPart[]>([]);
   const [partSearch, setPartSearch] = useState("");
@@ -88,7 +89,17 @@ export default function ServicesPartsManagement() {
     stockQuantity: "",
     minStockLevel: "",
   });
-  
+
+  // Brands state
+  const [brands, setBrands] = useState<PartBrand[]>([]);
+  const [brandSearch, setBrandSearch] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState<PartBrand | null>(null);
+  const [brandDialogOpen, setBrandDialogOpen] = useState(false);
+  const [brandFormData, setBrandFormData] = useState({
+    name: "",
+    description: "",
+  });
+
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("services");
 
@@ -133,9 +144,27 @@ export default function ServicesPartsManagement() {
     }
   };
 
+  // Fetch brands
+  const fetchBrands = async () => {
+    try {
+      setLoading(true);
+      const response = await fetch("/api/parts/brands");
+      if (response.ok) {
+        const data = await response.json();
+        setBrands(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch brands:", error);
+      toast.error("Failed to load brands");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     fetchServices();
     fetchParts();
+    fetchBrands();
   }, []);
 
   // Handle service form submit
@@ -314,6 +343,80 @@ export default function ServicesPartsManagement() {
     setPartDialogOpen(true);
   };
 
+  // Handle brand form submit
+  const handleBrandSubmit = async () => {
+    if (!brandFormData.name.trim()) {
+      toast.error("Brand name is required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const method = selectedBrand ? "PUT" : "POST";
+      const body = selectedBrand
+        ? { brandId: selectedBrand.brandId, ...brandFormData }
+        : brandFormData;
+
+      const response = await fetch("/api/parts/brands", {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+
+      if (response.ok) {
+        toast.success(
+          selectedBrand ? "Brand updated successfully" : "Brand created successfully"
+        );
+        setBrandDialogOpen(false);
+        resetBrandForm();
+        fetchBrands();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Failed to save brand");
+      }
+    } catch (error) {
+      console.error("Failed to save brand:", error);
+      toast.error("Failed to save brand");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Delete brand
+  const handleDeleteBrand = async (brandId: string) => {
+    if (!confirm("Are you sure you want to delete this brand?")) return;
+
+    try {
+      setLoading(true);
+      const response = await fetch(`/api/parts/brands?brandId=${brandId}`, {
+        method: "DELETE",
+      });
+
+      if (response.ok) {
+        toast.success("Brand deleted successfully");
+        fetchBrands();
+      } else {
+        const error = await response.json();
+        toast.error(error.error || "Failed to delete brand");
+      }
+    } catch (error) {
+      console.error("Failed to delete brand:", error);
+      toast.error("Failed to delete brand");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Edit brand
+  const handleEditBrand = (brand: PartBrand) => {
+    setSelectedBrand(brand);
+    setBrandFormData({
+      name: brand.name,
+      description: brand.description || "",
+    });
+    setBrandDialogOpen(true);
+  };
+
   // Reset forms
   const resetServiceForm = () => {
     setSelectedService(null);
@@ -340,6 +443,14 @@ export default function ServicesPartsManagement() {
     });
   };
 
+  const resetBrandForm = () => {
+    setSelectedBrand(null);
+    setBrandFormData({
+      name: "",
+      description: "",
+    });
+  };
+
   // Filter services
   const filteredServices = services.filter((service) =>
     service.name.toLowerCase().includes(serviceSearch.toLowerCase()) ||
@@ -353,6 +464,12 @@ export default function ServicesPartsManagement() {
     part.brand.toLowerCase().includes(partSearch.toLowerCase()) ||
     part.category?.toLowerCase().includes(partSearch.toLowerCase()) ||
     part.partNumber?.toLowerCase().includes(partSearch.toLowerCase())
+  );
+
+  // Filter brands
+  const filteredBrands = brands.filter((brand) =>
+    brand.name.toLowerCase().includes(brandSearch.toLowerCase()) ||
+    brand.description?.toLowerCase().includes(brandSearch.toLowerCase())
   );
 
   if (permissionsLoading) {
@@ -399,7 +516,7 @@ export default function ServicesPartsManagement() {
             </div>
 
             <Tabs value={activeTab} onValueChange={setActiveTab}>
-              <TabsList className="grid w-full grid-cols-2 max-w-md">
+              <TabsList className="grid w-full grid-cols-3 max-w-lg">
                 <TabsTrigger value="services" className="flex items-center gap-2">
                   <Wrench className="h-4 w-4" />
                   Services
@@ -407,6 +524,10 @@ export default function ServicesPartsManagement() {
                 <TabsTrigger value="parts" className="flex items-center gap-2">
                   <Package className="h-4 w-4" />
                   Parts
+                </TabsTrigger>
+                <TabsTrigger value="brands" className="flex items-center gap-2">
+                  <Search className="h-4 w-4" />
+                  Brands
                 </TabsTrigger>
               </TabsList>
 
@@ -633,6 +754,99 @@ export default function ServicesPartsManagement() {
                   </CardContent>
                 </Card>
               </TabsContent>
+
+              <TabsContent value="brands" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <div className="flex justify-between items-center">
+                      <div>
+                        <CardTitle>Brands</CardTitle>
+                        <CardDescription>
+                          Manage part brands and manufacturers
+                        </CardDescription>
+                      </div>
+                      <Button
+                        onClick={() => {
+                          resetBrandForm();
+                          setBrandDialogOpen(true);
+                        }}
+                      >
+                        <Plus className="mr-2 h-4 w-4" />
+                        Add Brand
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="mb-4">
+                      <div className="relative">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                          placeholder="Search brands..."
+                          value={brandSearch}
+                          onChange={(e) => setBrandSearch(e.target.value)}
+                          className="pl-8"
+                        />
+                      </div>
+                    </div>
+
+                    {loading && filteredBrands.length === 0 ? (
+                      <div className="flex justify-center py-8">
+                        <Loader2 className="h-8 w-8 animate-spin" />
+                      </div>
+                    ) : (
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Name</TableHead>
+                            <TableHead>Description</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Actions</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {filteredBrands.map((brand) => (
+                            <TableRow key={brand.brandId}>
+                              <TableCell className="font-medium">
+                                {brand.name}
+                              </TableCell>
+                              <TableCell className="max-w-xs truncate">
+                                {brand.description || "-"}
+                              </TableCell>
+                              <TableCell>
+                                <Badge
+                                  variant={brand.isActive ? "default" : "secondary"}
+                                >
+                                  {brand.isActive ? "Active" : "Inactive"}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-2">
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() => handleEditBrand(brand)}
+                                  >
+                                    <Edit className="h-4 w-4" />
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    onClick={() =>
+                                      handleDeleteBrand(brand.brandId)
+                                    }
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    )}
+                  </CardContent>
+                </Card>
+              </TabsContent>
             </Tabs>
           </div>
         </div>
@@ -772,13 +986,12 @@ export default function ServicesPartsManagement() {
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="part-brand">Brand *</Label>
-                  <Input
-                    id="part-brand"
+                  <BrandCombobox
                     value={partFormData.brand}
-                    onChange={(e) =>
-                      setPartFormData({ ...partFormData, brand: e.target.value })
+                    onValueChange={(value) =>
+                      setPartFormData({ ...partFormData, brand: value })
                     }
-                    placeholder="e.g., Bosch"
+                    placeholder="Select or create brand..."
                   />
                 </div>
               </div>
@@ -889,6 +1102,66 @@ export default function ServicesPartsManagement() {
                   "Update Part"
                 ) : (
                   "Add Part"
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* Brand Dialog */}
+        <Dialog open={brandDialogOpen} onOpenChange={setBrandDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>
+                {selectedBrand ? "Edit Brand" : "Add New Brand"}
+              </DialogTitle>
+              <DialogDescription>
+                {selectedBrand
+                  ? "Update the brand details below"
+                  : "Enter the details for the new brand"}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="brand-name">Name *</Label>
+                <Input
+                  id="brand-name"
+                  value={brandFormData.name}
+                  onChange={(e) =>
+                    setBrandFormData({ ...brandFormData, name: e.target.value })
+                  }
+                  placeholder="e.g., Bosch"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="brand-description">Description</Label>
+                <Input
+                  id="brand-description"
+                  value={brandFormData.description}
+                  onChange={(e) =>
+                    setBrandFormData({
+                      ...brandFormData,
+                      description: e.target.value,
+                    })
+                  }
+                  placeholder="Brief description of the brand"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setBrandDialogOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleBrandSubmit} disabled={loading}>
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : selectedBrand ? (
+                  "Update Brand"
+                ) : (
+                  "Add Brand"
                 )}
               </Button>
             </DialogFooter>
