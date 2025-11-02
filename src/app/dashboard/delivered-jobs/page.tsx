@@ -90,12 +90,11 @@ const DeliveredJobsList = () => {
   const { promptForPassword, AdminPasswordPromptComponent } =
     useAdminPasswordPrompt();
 
-
   const handleDelete = async (taskId: string, title: string) => {
     promptForPassword(
       ADMIN_PASSWORD_ACTIONS.DELETE_JOB,
       `Delete job "${title}"`,
-      () => { },
+      () => {},
       {
         targetId: taskId,
         targetType: "job",
@@ -128,41 +127,64 @@ const DeliveredJobsList = () => {
     );
   };
 
+  const matchesSearch = (job: Task, query: string) => {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+
+    const fields: string[] = [];
+    // Vehicle number (title)
+    if (job.title) fields.push(job.title);
+    // Owner / customer details
+    if (job.customerName) fields.push(job.customerName);
+    if (job.customerPhone) fields.push(job.customerPhone);
+    // Company details
+    if ((job as any).companyName) fields.push((job as any).companyName);
+    // Remarks / description
+    if ((job as any).damageRemarks) fields.push((job as any).damageRemarks);
+    // Status/column label
+    if (job.column) fields.push(job.column);
+    // Subtasks content (services/parts/brand/descriptions)
+    if (job.subTasks && Array.isArray(job.subTasks)) {
+      for (const st of job.subTasks) {
+        if (st.serviceType) fields.push(st.serviceType);
+        if (st.partsType) fields.push(st.partsType);
+        if (st.partsBrand) fields.push(st.partsBrand);
+        if (st.serviceDescription) fields.push(st.serviceDescription);
+        if (st.partsDescription) fields.push(st.partsDescription);
+      }
+    }
+
+    return fields.some((f) => f && f.toLowerCase().includes(q));
+  };
 
   const filteredJobs = allJobs
-    .filter((job) =>
-      job.title.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    .filter((job) => matchesSearch(job, searchQuery))
     .sort((a, b) => {
       const aTime = (sortBy === "updated" ? a.updatedAt : a.createdAt)
         ? new Date(
-          (sortBy === "updated"
-            ? (a as any).updatedAt
-            : (a as any).createdAt) as any
-        ).getTime()
+            (sortBy === "updated"
+              ? (a as any).updatedAt
+              : (a as any).createdAt) as any
+          ).getTime()
         : 0;
       const bTime = (sortBy === "updated" ? b.updatedAt : b.createdAt)
         ? new Date(
-          (sortBy === "updated"
-            ? (b as any).updatedAt
-            : (b as any).createdAt) as any
-        ).getTime()
+            (sortBy === "updated"
+              ? (b as any).updatedAt
+              : (b as any).createdAt) as any
+          ).getTime()
         : 0;
       return sortOrder === "desc" ? bTime - aTime : aTime - bTime;
     });
 
-  const getStatusBadgeStyle = (status: string) => {
-    switch (status) {
-      case "todo":
-        return "bg-yellow-100 text-yellow-800";
-      case "inProgress":
-        return "bg-blue-100 text-blue-800";
-      case "finished":
-        return "bg-green-100 text-green-800";
-      case "delivered":
-        return "bg-purple-100 text-purple-800";
-      default:
-        return "bg-gray-100 text-gray-800";
+  // Helper to format delivered timestamp
+  const formatDeliveredAt = (job: Task) => {
+    const ts = (job as any).updatedAt || (job as any).createdAt;
+    if (!ts) return "-";
+    try {
+      return new Date(ts as any).toLocaleString();
+    } catch {
+      return "-";
     }
   };
 
@@ -178,7 +200,7 @@ const DeliveredJobsList = () => {
               <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
-                placeholder="Search by vehicle number..."
+                placeholder="Search vehicle no, owner, company, services..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-8"
@@ -220,7 +242,7 @@ const DeliveredJobsList = () => {
                 <TableHead className="w-[100px]">Image</TableHead>
                 <TableHead>Vehicle No</TableHead>
                 <TableHead>Progress</TableHead>
-                <TableHead className="text-right">Status</TableHead>
+                <TableHead className="text-right">Delivered At</TableHead>
                 <TableHead className="w-[120px] text-center">Receipt</TableHead>
                 <TableHead className="w-[100px] text-center">Delete</TableHead>
               </TableRow>
@@ -274,14 +296,7 @@ const DeliveredJobsList = () => {
                       {job.subTasksCompleted} of {job.totalSubTasks} tasks
                     </TableCell>
                     <TableCell className="text-right">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${getStatusBadgeStyle(
-                          job.column
-                        )}`}
-                      >
-                        {job.column.charAt(0).toUpperCase() +
-                          job.column.slice(1)}
-                      </span>
+                      {formatDeliveredAt(job)}
                     </TableCell>
                     <TableCell className="text-center">
                       <LazyPrintableCreditBill jobId={job.id} />

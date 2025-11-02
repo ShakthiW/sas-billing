@@ -720,7 +720,7 @@ const Dashboard = () => {
                               </p>
                               <p className="text-2xl ipad:text-3xl font-bold text-gray-900">
                                 {todayJobsLoading ? (
-                                  <div className="animate-pulse bg-gray-200 h-8 ipad:h-10 w-24 ipad:w-32 rounded"></div>
+                                  <span className="animate-pulse bg-gray-200 h-8 ipad:h-10 w-24 ipad:w-32 rounded inline-block"></span>
                                 ) : (
                                   `Rs. ${todayIncome.toLocaleString()}`
                                 )}
