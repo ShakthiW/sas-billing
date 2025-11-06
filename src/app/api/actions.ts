@@ -131,6 +131,20 @@ export async function createJob(formData: FormData) {
     if (vehicleNo.length < 3) throw new Error("Vehicle number too short");
     // Customer details are optional at task initiation, will be required at billing
 
+    // Check for existing active jobs with the same vehicle number
+    const db = await connectToDatabase();
+    const existingActiveJob = await db.collection("jobs").findOne({
+      vehicleNo: vehicleNo,
+      status: { $ne: "delivered" },
+      deleted: { $ne: true },
+    });
+
+    if (existingActiveJob) {
+      throw new Error(
+        `A job with vehicle number "${vehicleNo}" already exists and is not yet delivered. Please wait until the existing job is delivered before creating a new one.`
+      );
+    }
+
     // Validate subtasks structure if present
     if (Array.isArray(subTasks) && subTasks.length > 0) {
       for (const task of subTasks) {
@@ -167,14 +181,14 @@ export async function createJob(formData: FormData) {
         (isCompanyVehicleString === "true" ||
           isCompanyVehicleString === "1" ||
           isCompanyVehicleString === "on") &&
-        companyName
+          companyName
           ? companyName
           : "",
       createdAt: new Date(),
       updatedAt: new Date(),
     };
 
-    const db = await connectToDatabase();
+    // Reuse the database connection from earlier
     const result = await db.collection("jobs").insertOne(job);
 
     return {
@@ -2113,10 +2127,10 @@ export async function getAllCreditPayments(
 
     const formattedPayments: CreditPayment[] = payments.map(
       (payment) =>
-        ({
-          ...payment,
-          _id: payment._id.toString(),
-        } as CreditPayment)
+      ({
+        ...payment,
+        _id: payment._id.toString(),
+      } as CreditPayment)
     );
 
     return {
@@ -2227,10 +2241,10 @@ export async function getAllBankAccounts(): Promise<BankAccount[]> {
 
     return accounts.map(
       (account) =>
-        ({
-          ...account,
-          _id: account._id.toString(),
-        } as BankAccount)
+      ({
+        ...account,
+        _id: account._id.toString(),
+      } as BankAccount)
     );
   } catch (error: any) {
     console.error("getAllBankAccounts: Failed to fetch bank accounts", error);
@@ -2251,9 +2265,9 @@ export async function getBankAccountById(
 
     return account
       ? ({
-          ...account,
-          _id: account._id.toString(),
-        } as BankAccount)
+        ...account,
+        _id: account._id.toString(),
+      } as BankAccount)
       : null;
   } catch (error: any) {
     console.error("getBankAccountById: Failed to fetch bank account", error);
@@ -2366,10 +2380,10 @@ export async function getBankTransactionHistory(
 
     return transactions.map(
       (transaction) =>
-        ({
-          ...transaction,
-          _id: transaction._id.toString(),
-        } as BankTransaction)
+      ({
+        ...transaction,
+        _id: transaction._id.toString(),
+      } as BankTransaction)
     );
   } catch (error: any) {
     console.error(
@@ -2393,9 +2407,9 @@ export async function getBankTransactionById(
 
     return transaction
       ? ({
-          ...transaction,
-          _id: transaction._id.toString(),
-        } as BankTransaction)
+        ...transaction,
+        _id: transaction._id.toString(),
+      } as BankTransaction)
       : null;
   } catch (error: any) {
     console.error("getBankTransactionById: Failed to fetch transaction", error);
