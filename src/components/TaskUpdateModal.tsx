@@ -279,6 +279,7 @@ export default function TaskUpdateModal({
 
   const handleSelectPartType = (part: any) => {
     setSelectedPartType(part.name || part);
+    setNewPartBrand(part.brand || ""); // Pre-fill with existing condition
     setSubtaskMenuStep("brands");
     // Don't auto-select brand, let user choose from all available brands
     if (brands.length === 0) {
@@ -544,11 +545,10 @@ export default function TaskUpdateModal({
     service.name.toLowerCase().includes(serviceSearch.toLowerCase())
   );
 
-  // Get unique parts (by name)
-  const uniqueParts = Array.from(
-    new Map(parts.map((part) => [part.name, part])).values()
-  ).filter((part) =>
-    part.name.toLowerCase().includes(partSearch.toLowerCase())
+  // Show all parts with their conditions (not just unique by name)
+  const filteredParts = parts.filter((part) =>
+    part.name.toLowerCase().includes(partSearch.toLowerCase()) ||
+    part.brand?.toLowerCase().includes(partSearch.toLowerCase())
   );
 
   // Filter brands based on search
@@ -926,18 +926,24 @@ export default function TaskUpdateModal({
                 ) : (
                   <>
                     <div className="grid grid-cols-2 gap-2 max-h-64 overflow-y-auto">
-                      {uniqueParts.map((part) => (
+                      {filteredParts.map((part) => (
                         <Button
-                          key={part.partId || part.name}
+                          key={part.partId}
                           type="button"
                           variant="outline"
                           onClick={() => handleSelectPartType(part)}
+                          className="h-auto py-2"
                         >
-                          {part.name}
+                          <div className="flex flex-col items-center text-center gap-1">
+                            <span className="font-medium">{part.name}</span>
+                            <span className="text-xs text-muted-foreground">
+                              {part.brand || "No condition"}
+                            </span>
+                          </div>
                         </Button>
                       ))}
                     </div>
-                    {uniqueParts.length === 0 && (
+                    {filteredParts.length === 0 && (
                       <div className="text-center text-muted-foreground py-4">
                         No parts found. Create a new one?
                       </div>
@@ -950,6 +956,27 @@ export default function TaskUpdateModal({
             {/* Brands Menu */}
             {subtaskMenuStep === "brands" && (
               <div className="space-y-3">
+                {/* Current Selection Info */}
+                {newPartBrand && (
+                  <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 space-y-2">
+                    <div>
+                      <p className="text-sm font-medium text-blue-900">
+                        Current Condition: <span className="font-bold">{newPartBrand}</span>
+                      </p>
+                      <p className="text-xs text-blue-700 mt-1">
+                        Select a different condition below to change it, or keep current
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      onClick={() => handleSelectBrand(newPartBrand)}
+                      size="sm"
+                      className="w-full"
+                    >
+                      Keep Current Condition
+                    </Button>
+                  </div>
+                )}
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
