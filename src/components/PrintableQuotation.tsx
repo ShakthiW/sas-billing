@@ -94,10 +94,9 @@ const PrintableQuotation: React.FC<PrintableQuotationProps> = ({
                 <td className="border p-2 align-top">
                   {s.taskType === "service"
                     ? s.serviceDescription || `Service: ${s.serviceType}`
-                    : s.partsDescription ||
-                      `Parts: ${s.partsType}${
-                        s.partsBrand ? ` (${s.partsBrand})` : ""
-                      }`}
+                    : s.partsDescription
+                    ? `Parts: ${s.partsType}${s.partsBrand ? ` (${s.partsBrand})` : ""} - ${s.partsDescription}`
+                    : `Parts: ${s.partsType}${s.partsBrand ? ` (${s.partsBrand})` : ""}`}
                 </td>
                 <td className="border p-2 text-center align-top">&nbsp;</td>
               </tr>

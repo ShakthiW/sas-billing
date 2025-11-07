@@ -158,20 +158,33 @@ export default function QuotationDetailPage() {
                       const partResponse = await fetch(
                         `/api/parts?search=${encodeURIComponent(
                           subtask.partsType
-                        )}&brand=${encodeURIComponent(
-                          subtask.partsBrand || ""
                         )}`
                       );
                       if (partResponse.ok) {
                         const parts = await partResponse.json();
+
+                        // Normalize brand values for comparison
+                        const subtaskBrand = (subtask.partsBrand || "").toLowerCase();
+                        const isNoBrand = !subtaskBrand || subtaskBrand === "not selected";
+
                         const matchingPart = parts.find(
-                          (p: any) =>
-                            p.name?.toLowerCase() ===
-                              subtask.partsType?.toLowerCase() &&
-                            (!subtask.partsBrand ||
-                              p.brand?.toLowerCase() ===
-                                subtask.partsBrand?.toLowerCase())
+                          (p: any) => {
+                            if (p.name?.toLowerCase() !== subtask.partsType?.toLowerCase()) {
+                              return false;
+                            }
+
+                            const partBrand = (p.brand || "").toLowerCase();
+                            const partHasNoBrand = !partBrand;
+
+                            // Match if both have no brand, or brands match exactly
+                            if (isNoBrand && partHasNoBrand) {
+                              return true;
+                            }
+
+                            return partBrand === subtaskBrand;
+                          }
                         );
+
                         if (matchingPart?.description) {
                           return {
                             ...subtask,

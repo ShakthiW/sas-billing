@@ -317,8 +317,8 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
 
   // Create new part
   const handleCreatePart = async () => {
-    if (!newPartName.trim() || !newPartBrand.trim()) {
-      toast.error("Part name and brand are required");
+    if (!newPartName.trim()) {
+      toast.error("Part name is required");
       return;
     }
 
@@ -350,7 +350,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
             subtaskID: uuidv4(),
             taskType: "parts",
             partsType: newPartName,
-            partsBrand: newPartBrand,
+            partsBrand: newPartBrand || "Not selected",
             isCompleted: false,
           },
         ]);
@@ -772,7 +772,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                 </div>
                 <div className="space-y-3">
                   <Label htmlFor="partBrand" className="">
-                    Condition *
+                    Condition
                   </Label>
                   <BrandCombobox
                     value={newPartBrand}
@@ -866,7 +866,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                 type="button"
                 onClick={handleCreatePart}
                 disabled={
-                  loading || !newPartName.trim() || !newPartBrand.trim()
+                  loading || !newPartName.trim()
                 }
                 className="w-full h-14"
               >

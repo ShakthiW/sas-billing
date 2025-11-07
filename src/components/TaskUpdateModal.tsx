@@ -385,8 +385,8 @@ export default function TaskUpdateModal({
 
   // Create new part
   const handleCreatePart = async () => {
-    if (!newPartName.trim() || !newPartBrand.trim()) {
-      toast.error("Part name and brand are required");
+    if (!newPartName.trim()) {
+      toast.error("Part name is required");
       return;
     }
 
@@ -415,7 +415,7 @@ export default function TaskUpdateModal({
           subtaskID: uuidv4(),
           taskType: "parts",
           partsType: newPartName,
-          partsBrand: newPartBrand,
+          partsBrand: newPartBrand || "Not selected",
           isCompleted: false,
         };
         setNewSubtasks((prev) => [...prev, newSubtask]);
@@ -1072,7 +1072,7 @@ export default function TaskUpdateModal({
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="partBrand">Condition *</Label>
+                    <Label htmlFor="partBrand">Condition</Label>
                     <BrandCombobox
                       value={newPartBrand}
                       onValueChange={setNewPartBrand}
@@ -1146,7 +1146,7 @@ export default function TaskUpdateModal({
                   type="button"
                   onClick={handleCreatePart}
                   disabled={
-                    loading || !newPartName.trim() || !newPartBrand.trim()
+                    loading || !newPartName.trim()
                   }
                   className="w-full"
                 >
