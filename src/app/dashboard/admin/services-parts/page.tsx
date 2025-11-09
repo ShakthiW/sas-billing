@@ -218,8 +218,8 @@ export default function ServicesPartsManagement() {
 
   // Handle part form submit
   const handlePartSubmit = async () => {
-    if (!partFormData.name.trim() || !partFormData.brand.trim()) {
-      toast.error("Part name and brand are required");
+    if (!partFormData.name.trim()) {
+      toast.error("Part name is required");
       return;
     }
 
@@ -696,7 +696,7 @@ export default function ServicesPartsManagement() {
                               <TableCell className="font-medium">
                                 {part.name}
                               </TableCell>
-                              <TableCell>{part.brand}</TableCell>
+                              <TableCell>{part.brand || "Not selected"}</TableCell>
                               <TableCell>{part.category || "-"}</TableCell>
                               <TableCell>{part.partNumber || "-"}</TableCell>
                               <TableCell>
@@ -985,7 +985,7 @@ export default function ServicesPartsManagement() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="part-brand">Condition *</Label>
+                  <Label htmlFor="part-brand">Condition</Label>
                   <BrandCombobox
                     value={partFormData.brand}
                     onValueChange={(value) =>

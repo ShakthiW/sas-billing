@@ -129,17 +129,31 @@ export default function BillingPage() {
                     const partResponse = await fetch(
                       `/api/parts?search=${encodeURIComponent(
                         subtask.partsType
-                      )}&brand=${encodeURIComponent(subtask.partsBrand || "")}`
+                      )}`
                     );
                     if (partResponse.ok) {
                       const parts = await partResponse.json();
+
+                      // Normalize brand values for comparison
+                      const subtaskBrand = (subtask.partsBrand || "").toLowerCase();
+                      const isNoBrand = !subtaskBrand || subtaskBrand === "not selected";
+
                       const matchingPart = parts.find(
-                        (p: any) =>
-                          p.name.toLowerCase() ===
-                            subtask.partsType.toLowerCase() &&
-                          (!subtask.partsBrand ||
-                            p.brand.toLowerCase() ===
-                              subtask.partsBrand.toLowerCase())
+                        (p: any) => {
+                          if (p.name.toLowerCase() !== subtask.partsType.toLowerCase()) {
+                            return false;
+                          }
+
+                          const partBrand = (p.brand || "").toLowerCase();
+                          const partHasNoBrand = !partBrand;
+
+                          // Match if both have no brand, or brands match exactly
+                          if (isNoBrand && partHasNoBrand) {
+                            return true;
+                          }
+
+                          return partBrand === subtaskBrand;
+                        }
                       );
 
                       if (matchingPart && matchingPart.description) {
@@ -389,13 +403,15 @@ export default function BillingPage() {
               description = `Service: ${subtask.serviceType}`;
             }
           } else {
-            // Use the full part description if available, otherwise use the part name and brand
+            // Show part name/brand and description if available
+            const partName = `Parts: ${subtask.partsType}${
+              subtask.partsBrand ? ` (${subtask.partsBrand})` : ""
+            }`;
+
             if (subtask.partsDescription) {
-              description = subtask.partsDescription;
+              description = `${partName} - ${subtask.partsDescription}`;
             } else {
-              description = `Parts: ${subtask.partsType}${
-                subtask.partsBrand ? ` (${subtask.partsBrand})` : ""
-              }`;
+              description = partName;
             }
           }
           return { description };

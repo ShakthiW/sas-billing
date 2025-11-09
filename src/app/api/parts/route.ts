@@ -81,24 +81,35 @@ export async function POST(request: NextRequest) {
       tags 
     } = body;
 
-    if (!name || !brand) {
+    if (!name) {
       return NextResponse.json(
-        { error: "Part name and brand are required" },
+        { error: "Part name is required" },
         { status: 400 }
       );
     }
 
     const db = await connectToDatabase();
-    
+
     // Check if part with same name and brand already exists
-    const existing = await db.collection("customParts").findOne({
-      name: { $regex: `^${name}$`, $options: "i" },
-      brand: { $regex: `^${brand}$`, $options: "i" }
-    });
-    
+    const existingQuery: any = {
+      name: { $regex: `^${name}$`, $options: "i" }
+    };
+
+    // Only include brand in duplicate check if it's provided
+    if (brand && brand.trim()) {
+      existingQuery.brand = { $regex: `^${brand}$`, $options: "i" };
+    } else {
+      existingQuery.brand = { $in: [null, ""] }; // Check for parts with no brand
+    }
+
+    const existing = await db.collection("customParts").findOne(existingQuery);
+
     if (existing) {
+      const errorMsg = brand
+        ? "Part with this name and condition already exists"
+        : "Part with this name and no condition already exists";
       return NextResponse.json(
-        { error: "Part with this name and brand already exists" },
+        { error: errorMsg },
         { status: 409 }
       );
     }
@@ -106,7 +117,7 @@ export async function POST(request: NextRequest) {
     const newPart: CustomPart = {
       partId: uuidv4(),
       name,
-      brand,
+      brand: brand || "", // Allow empty brand
       category,
       partNumber,
       description,
@@ -158,9 +169,9 @@ export async function PUT(request: NextRequest) {
     }
 
     const db = await connectToDatabase();
-    
+
     // If name and brand are being updated, check for duplicates
-    if (updateData.name || updateData.brand) {
+    if (updateData.name || updateData.brand !== undefined) {
       const currentPart = await db.collection("customParts").findOne({ partId });
       if (!currentPart) {
         return NextResponse.json(
@@ -170,17 +181,28 @@ export async function PUT(request: NextRequest) {
       }
 
       const checkName = updateData.name || currentPart.name;
-      const checkBrand = updateData.brand || currentPart.brand;
-      
-      const existing = await db.collection("customParts").findOne({
+      const checkBrand = updateData.brand !== undefined ? updateData.brand : currentPart.brand;
+
+      const existingQuery: any = {
         name: { $regex: `^${checkName}$`, $options: "i" },
-        brand: { $regex: `^${checkBrand}$`, $options: "i" },
         partId: { $ne: partId }
-      });
-      
+      };
+
+      // Only include brand in duplicate check if it's provided
+      if (checkBrand && checkBrand.trim()) {
+        existingQuery.brand = { $regex: `^${checkBrand}$`, $options: "i" };
+      } else {
+        existingQuery.brand = { $in: [null, ""] }; // Check for parts with no brand
+      }
+
+      const existing = await db.collection("customParts").findOne(existingQuery);
+
       if (existing) {
+        const errorMsg = checkBrand
+          ? "Part with this name and condition already exists"
+          : "Part with this name and no condition already exists";
         return NextResponse.json(
-          { error: "Part with this name and brand already exists" },
+          { error: errorMsg },
           { status: 409 }
         );
       }

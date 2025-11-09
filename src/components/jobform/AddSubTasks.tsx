@@ -171,9 +171,10 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
 
   const handleSelectPartType = (part: any) => {
     console.log("SubTasks: handleSelectPartType - Part selected:", part);
-    setSelectedPartType(part.name || part);
+    // Store the selected part and show condition selection with default
+    setSelectedPartType(part.name);
+    setNewPartBrand(part.brand || ""); // Pre-fill with existing condition
     setMenuStep("brands");
-    // Don't auto-select brand, let user choose from all available brands
     if (brands.length === 0) {
       fetchBrands();
     }
@@ -317,8 +318,8 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
 
   // Create new part
   const handleCreatePart = async () => {
-    if (!newPartName.trim() || !newPartBrand.trim()) {
-      toast.error("Part name and brand are required");
+    if (!newPartName.trim()) {
+      toast.error("Part name is required");
       return;
     }
 
@@ -350,7 +351,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
             subtaskID: uuidv4(),
             taskType: "parts",
             partsType: newPartName,
-            partsBrand: newPartBrand,
+            partsBrand: newPartBrand || "Not selected",
             isCompleted: false,
           },
         ]);
@@ -383,11 +384,10 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
     service.name.toLowerCase().includes(serviceSearch.toLowerCase())
   );
 
-  // Get unique parts (by name)
-  const uniqueParts = Array.from(
-    new Map(parts.map((part) => [part.name, part])).values()
-  ).filter((part) =>
-    part.name.toLowerCase().includes(partSearch.toLowerCase())
+  // Show all parts with their conditions (not just unique by name)
+  const filteredParts = parts.filter((part) =>
+    part.name.toLowerCase().includes(partSearch.toLowerCase()) ||
+    part.brand?.toLowerCase().includes(partSearch.toLowerCase())
   );
 
   // Filter brands based on search
@@ -597,22 +597,25 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
               ) : (
                 <>
                   <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 max-h-96 overflow-y-auto">
-                    {uniqueParts.map((part) => (
+                    {filteredParts.map((part) => (
                       <Button
-                        key={part.partId || part.name}
+                        key={part.partId}
                         type="button"
                         variant="outline"
                         size="lg"
                         className="h-20 p-4"
                         onClick={() => handleSelectPartType(part)}
                       >
-                        <div className="flex flex-col items-center text-center">
-                          <span className="truncate w-full">{part.name}</span>
+                        <div className="flex flex-col items-center text-center gap-1">
+                          <span className="truncate w-full font-medium">{part.name}</span>
+                          <span className="text-xs text-muted-foreground truncate w-full">
+                            {part.brand || "No condition"}
+                          </span>
                         </div>
                       </Button>
                     ))}
                   </div>
-                  {uniqueParts.length === 0 && (
+                  {filteredParts.length === 0 && (
                     <div className="text-center text-muted-foreground py-8">
                       <div className="text-4xl mb-2">🔍</div>
                       <p className="text-lg">
@@ -628,6 +631,26 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
           {/* Brands Menu */}
           {menuStep === "brands" && (
             <div className="space-y-6 p-6">
+              {/* Current Selection Info */}
+              {newPartBrand && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 space-y-3">
+                  <div>
+                    <p className="text-sm font-medium text-blue-900">
+                      Current Condition: <span className="font-bold">{newPartBrand}</span>
+                    </p>
+                    <p className="text-xs text-blue-700 mt-1">
+                      Select a different condition below to change it, or keep current
+                    </p>
+                  </div>
+                  <Button
+                    type="button"
+                    onClick={() => handleSelectBrand(newPartBrand)}
+                    className="w-full"
+                  >
+                    Keep Current Condition
+                  </Button>
+                </div>
+              )}
               <div className="relative">
                 <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
@@ -772,7 +795,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                 </div>
                 <div className="space-y-3">
                   <Label htmlFor="partBrand" className="">
-                    Condition *
+                    Condition
                   </Label>
                   <BrandCombobox
                     value={newPartBrand}
@@ -866,7 +889,7 @@ export default function SubTasks({ setSubTasks }: SubTasksProps) {
                 type="button"
                 onClick={handleCreatePart}
                 disabled={
-                  loading || !newPartName.trim() || !newPartBrand.trim()
+                  loading || !newPartName.trim()
                 }
                 className="w-full h-14"
               >
